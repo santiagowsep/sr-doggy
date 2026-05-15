@@ -133,6 +133,9 @@
     <span id="monthLabel"></span>
     <button onclick="nextMonth()">›</button>
   </div>
+  <div style="text-align:center;margin-top:8px;font-size:11px;font-weight:600">
+    <span id="sync-indicator" style="color:#b8c9a0">↻ Cargando...</span>
+  </div>
 </div>
 
 <!-- Tabs -->
@@ -183,13 +186,47 @@ const DEFAULT_FIXED = [
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let currentTab = "ventas";
-let data = loadData() || { ventas: {}, gastos: {}, mercancia: {}, fijos: {} };
+const API_URL = "http://187.77.21.195:3077";
+let data = { ventas: {}, gastos: {}, mercancia: {}, fijos: {} };
+let syncStatus = "cargando";
 
 function loadData() {
   try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; } catch { return null; }
 }
+
 function saveData() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
+  fetch(API_URL + "/data", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })
+    .then(r => r.ok ? setSyncStatus("ok") : setSyncStatus("error"))
+    .catch(() => setSyncStatus("offline"));
+}
+
+function setSyncStatus(s) {
+  syncStatus = s;
+  const el = document.getElementById("sync-indicator");
+  if (!el) return;
+  const map = { ok: ["✓ Sincronizado", "#4a7c2e"], offline: ["⚠ Sin conexión (guardado local)", "#b8860b"], error: ["✗ Error de sync", "#8b1a1a"], cargando: ["↻ Cargando...", "#555"] };
+  const [txt, color] = map[s] || map.cargando;
+  el.textContent = txt; el.style.color = color;
+}
+
+async function initData() {
+  const local = loadData();
+  if (local) { data = local; renderVentas(); }
+  try {
+    const res = await fetch(API_URL + "/data");
+    if (res.ok) {
+      const remote = await res.json();
+      if (Object.keys(remote).length > 0) {
+        data = remote;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } else if (local) {
+        saveData();
+      }
+      setSyncStatus("ok");
+    } else { setSyncStatus("offline"); }
+  } catch { setSyncStatus("offline"); }
+  renderVentas();
 }
 function fmt(n) {
   const num = parseInt(n) || 0;
@@ -508,7 +545,7 @@ function renderResumen() {
 
 // Init
 updateMonthLabel();
-renderVentas();
+initData();
 </script>
 </body>
 </html>
