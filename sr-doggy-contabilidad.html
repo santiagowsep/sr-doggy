@@ -418,7 +418,7 @@ function renderMercancia() {
           <button class="btn-delete" onclick="removeMercancia(${i})">✕</button>
         </div>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-          <div style="flex:1;min-width:0"><input type="date" class="text-input" value="${item.fecha||''}" onchange="updateMercancia(${i},'fecha',this.value)"></div>
+          <div style="width:118px;flex-shrink:0"><input type="date" class="text-input" value="${item.fecha||''}" onchange="updateMercancia(${i},'fecha',this.value)"></div>
           <div style="flex:1;min-width:0"><select class="select-input" onchange="updateMercancia(${i},'metodo',this.value)">
             <option value="efectivo" ${(item.metodo||'efectivo')!="bancolombia"?"selected":""}>Efectivo</option>
             <option value="bancolombia" ${item.metodo=="bancolombia"?"selected":""}>Bancolombia</option>
@@ -485,7 +485,7 @@ function renderFijos() {
         <div style="width:120px;flex-shrink:0"><input class="cop-input" value="${fmt(item.value)}" onfocus="this.value='${item.value||''}';this.select()" onblur="updateFijo(${i},'value',this.value)"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
-        <div style="flex:1;min-width:0"><input type="date" class="text-input" value="${item.fecha||''}" onchange="updateFijo(${i},'fecha',this.value)"></div>
+        <div style="width:118px;flex-shrink:0"><input type="date" class="text-input" value="${item.fecha||''}" onchange="updateFijo(${i},'fecha',this.value)"></div>
         <div style="flex:1;min-width:0"><select class="select-input" onchange="updateFijo(${i},'metodo',this.value)">
           <option value="efectivo" ${(item.metodo||'efectivo')!="bancolombia"?"selected":""}>Efectivo</option>
           <option value="bancolombia" ${item.metodo=="bancolombia"?"selected":""}>Bancolombia</option>
