@@ -361,14 +361,14 @@ function renderGastos() {
   const totEfG = g.reduce((s, x) => s + ((x.metodo||'efectivo') !== "bancolombia" ? (x.valor || 0) : 0), 0);
   const totBaG = g.reduce((s, x) => s + (x.metodo === "bancolombia" ? (x.valor || 0) : 0), 0);
   const total = totEfG + totBaG;
-  html += `<div style="display:flex;flex-direction:column;gap:6px;margin-top:16px">
-    <div style="background:#3a6b28;border-radius:10px;padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+  html += `<div style="display:flex;gap:8px;margin-top:16px">
+    <div style="flex:1;min-width:0;background:#3a6b28;border-radius:10px;padding:10px 12px;text-align:center">
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#c8e6b0">Efectivo</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#e8f5e0;margin-top:4px;white-space:nowrap">${fmt(totEfG)}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#e8f5e0;margin-top:3px">${fmt(totEfG)}</div>
     </div>
-    <div style="background:#154360;border-radius:10px;padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+    <div style="flex:1;min-width:0;background:#154360;border-radius:10px;padding:10px 12px;text-align:center">
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#aed6f1">Bancolombia</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#d6eaf8;margin-top:4px;white-space:nowrap">${fmt(totBaG)}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#d6eaf8;margin-top:3px">${fmt(totBaG)}</div>
     </div>
   </div>`;
   html += `<div class="total-bar" style="background:#8b1a1a;color:#fce4e4">
