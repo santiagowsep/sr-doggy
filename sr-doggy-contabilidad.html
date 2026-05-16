@@ -361,14 +361,14 @@ function renderGastos() {
   const totEfG = g.reduce((s, x) => s + ((x.metodo||'efectivo') !== "bancolombia" ? (x.valor || 0) : 0), 0);
   const totBaG = g.reduce((s, x) => s + (x.metodo === "bancolombia" ? (x.valor || 0) : 0), 0);
   const total = totEfG + totBaG;
-  html += `<div style="display:flex;gap:8px;margin-top:16px">
-    <div style="flex:1;min-width:0;background:#3a6b28;border-radius:10px;padding:12px 8px;text-align:center;overflow:hidden">
+  html += `<div style="display:inline-flex;gap:8px;margin-top:16px">
+    <div style="background:#3a6b28;border-radius:10px;padding:10px 16px;text-align:center">
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#c8e6b0">Efectivo</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#e8f5e0;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmt(totEfG)}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#e8f5e0;margin-top:4px;white-space:nowrap">${fmt(totEfG)}</div>
     </div>
-    <div style="flex:1;min-width:0;background:#154360;border-radius:10px;padding:12px 8px;text-align:center;overflow:hidden">
+    <div style="background:#154360;border-radius:10px;padding:10px 16px;text-align:center">
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#aed6f1">Bancolombia</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#d6eaf8;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmt(totBaG)}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#d6eaf8;margin-top:4px;white-space:nowrap">${fmt(totBaG)}</div>
     </div>
   </div>`;
   html += `<div class="total-bar" style="background:#8b1a1a;color:#fce4e4">
@@ -433,14 +433,14 @@ function renderMercancia() {
   const totEfM = m.reduce((s, x) => s + ((x.metodo||'efectivo') !== "bancolombia" ? (x.costo || 0) : 0), 0);
   const totBaM = m.reduce((s, x) => s + (x.metodo === "bancolombia" ? (x.costo || 0) : 0), 0);
   const total = totEfM + totBaM;
-  html += `<div style="display:flex;gap:8px;margin-top:16px">
-    <div style="flex:1;min-width:0;background:#3a6b28;border-radius:10px;padding:12px 8px;text-align:center;overflow:hidden">
+  html += `<div style="display:inline-flex;gap:8px;margin-top:16px">
+    <div style="background:#3a6b28;border-radius:10px;padding:10px 16px;text-align:center">
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#c8e6b0">Efectivo</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#e8f5e0;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmt(totEfM)}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#e8f5e0;margin-top:4px;white-space:nowrap">${fmt(totEfM)}</div>
     </div>
-    <div style="flex:1;min-width:0;background:#154360;border-radius:10px;padding:12px 8px;text-align:center;overflow:hidden">
+    <div style="background:#154360;border-radius:10px;padding:10px 16px;text-align:center">
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#aed6f1">Bancolombia</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#d6eaf8;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmt(totBaM)}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#d6eaf8;margin-top:4px;white-space:nowrap">${fmt(totBaM)}</div>
     </div>
   </div>`;
   html += `<div class="total-bar" style="background:#7a4f0e;color:#fce8c4">
@@ -498,14 +498,14 @@ function renderFijos() {
   const totEfF = f.reduce((s, x) => s + ((x.metodo||'efectivo') !== "bancolombia" ? (x.value || 0) : 0), 0);
   const totBaF = f.reduce((s, x) => s + (x.metodo === "bancolombia" ? (x.value || 0) : 0), 0);
   const total = totEfF + totBaF;
-  html += `<div style="display:flex;gap:8px;margin-top:16px">
-    <div style="flex:1;min-width:0;background:#3a6b28;border-radius:10px;padding:12px 8px;text-align:center;overflow:hidden">
+  html += `<div style="display:inline-flex;gap:8px;margin-top:16px">
+    <div style="background:#3a6b28;border-radius:10px;padding:10px 16px;text-align:center">
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#c8e6b0">Efectivo</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#e8f5e0;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmt(totEfF)}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#e8f5e0;margin-top:4px;white-space:nowrap">${fmt(totEfF)}</div>
     </div>
-    <div style="flex:1;min-width:0;background:#154360;border-radius:10px;padding:12px 8px;text-align:center;overflow:hidden">
+    <div style="background:#154360;border-radius:10px;padding:10px 16px;text-align:center">
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#aed6f1">Bancolombia</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#d6eaf8;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmt(totBaF)}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#d6eaf8;margin-top:4px;white-space:nowrap">${fmt(totBaF)}</div>
     </div>
   </div>`;
   html += `<div class="total-bar" style="background:#5c1a6e;color:#f0d9f7">
