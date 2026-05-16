@@ -176,11 +176,11 @@ const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto
 const DAYS_ES = ["dom","lun","mar","mié","jue","vie","sáb"];
 const STORAGE_KEY = "sr_doggy_contabilidad";
 const DEFAULT_FIXED = [
-  { id: "emp", name: "Empleado", value: 0, fecha: "" },
-  { id: "luz", name: "Luz", value: 0, fecha: "" },
-  { id: "agua", name: "Agua", value: 0, fecha: "" },
-  { id: "internet", name: "Internet", value: 0, fecha: "" },
-  { id: "arriendo", name: "Arriendo", value: 0, fecha: "" },
+  { id: "emp", name: "Empleado", value: 0, fecha: "", metodo: "efectivo" },
+  { id: "luz", name: "Luz", value: 0, fecha: "", metodo: "efectivo" },
+  { id: "agua", name: "Agua", value: 0, fecha: "", metodo: "efectivo" },
+  { id: "internet", name: "Internet", value: 0, fecha: "", metodo: "bancolombia" },
+  { id: "arriendo", name: "Arriendo", value: 0, fecha: "", metodo: "efectivo" },
 ];
 
 let currentMonth = new Date().getMonth();
@@ -349,11 +349,21 @@ function renderGastos() {
     });
   }
   
-  const total = g.reduce((s, x) => s + (x.valor || 0), 0);
+  const totEfG = g.reduce((s, x) => s + ((x.metodo||'efectivo') !== "bancolombia" ? (x.valor || 0) : 0), 0);
+  const totBaG = g.reduce((s, x) => s + (x.metodo === "bancolombia" ? (x.valor || 0) : 0), 0);
+  const total = totEfG + totBaG;
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
+    <div class="total-bar" style="background:#3a6b28;color:#e8f5e0;margin-top:0;padding:12px 16px">
+      <span class="tl" style="font-size:11px">Efectivo</span><span class="tv" style="font-size:16px">${fmt(totEfG)}</span>
+    </div>
+    <div class="total-bar" style="background:#154360;color:#d6eaf8;margin-top:0;padding:12px 16px">
+      <span class="tl" style="font-size:11px">Bancolombia</span><span class="tv" style="font-size:16px">${fmt(totBaG)}</span>
+    </div>
+  </div>`;
   html += `<div class="total-bar" style="background:#8b1a1a;color:#fce4e4">
     <span class="tl">Total Gastos</span><span class="tv">${fmt(total)}</span>
   </div>`;
-  
+
   document.getElementById("tab-gastos").innerHTML = html;
 }
 
@@ -384,35 +394,48 @@ function renderMercancia() {
 
   let html = '<div class="section-header"><h3 class="section-title">Compras de Mercancía</h3>';
   html += '<button class="btn-primary" onclick="addMercancia()">+ Agregar Compra</button></div>';
-  
+
   if (m.length === 0) {
     html += '<div class="empty-state">No hay compras registradas este mes</div>';
   } else {
-    m.forEach((item, i) => {
-      html += `<div class="row-item" style="flex-direction:column;gap:10px">
-        <div style="display:flex;gap:8px;width:100%;align-items:center;flex-wrap:wrap">
-          <div style="width:140px;flex-shrink:0"><input type="date" class="text-input" value="${item.fecha||''}" onchange="updateMercancia(${i},'fecha',this.value)"></div>
-          <div class="field"><input class="text-input" value="${item.producto||''}" placeholder="Producto" onchange="updateMercancia(${i},'producto',this.value)"></div>
-          <div class="field-sm"><input class="cop-input" value="${item.cantidad||1}" style="text-align:center" onchange="updateMercancia(${i},'cantidad',this.value)"></div>
-          <div class="field"><input class="text-input" value="${item.proveedor||''}" placeholder="Proveedor" onchange="updateMercancia(${i},'proveedor',this.value)"></div>
-        </div>
-        <div style="display:flex;gap:8px;width:100%;align-items:center">
-          <div class="field"><input class="cop-input" value="${fmt(item.costo)}" placeholder="Costo total" onfocus="this.value='${item.costo||''}';this.select()" onblur="updateMercancia(${i},'costo',this.value)"></div>
-          <div class="field-md"><select class="select-input" onchange="updateMercancia(${i},'metodo',this.value)">
-            <option value="efectivo" ${item.metodo=="efectivo"?"selected":""}>Efectivo</option>
+    [...m].reverse().forEach((item, ri) => {
+      const i = m.length - 1 - ri;
+      html += `<div class="row-item" style="flex-direction:column;gap:8px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div style="flex:1;min-width:130px"><input type="date" class="text-input" value="${item.fecha||''}" onchange="updateMercancia(${i},'fecha',this.value)"></div>
+          <div style="flex:1;min-width:130px"><select class="select-input" onchange="updateMercancia(${i},'metodo',this.value)">
+            <option value="efectivo" ${(item.metodo||'efectivo')!="bancolombia"?"selected":""}>Efectivo</option>
             <option value="bancolombia" ${item.metodo=="bancolombia"?"selected":""}>Bancolombia</option>
           </select></div>
           <button class="btn-delete" onclick="removeMercancia(${i})">✕</button>
         </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div style="flex:2;min-width:140px"><input class="text-input" value="${item.producto||''}" placeholder="Producto" onchange="updateMercancia(${i},'producto',this.value)"></div>
+          <div style="width:62px;flex-shrink:0"><input class="cop-input" value="${item.cantidad||1}" style="text-align:center" placeholder="Cant." onchange="updateMercancia(${i},'cantidad',this.value)"></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div style="flex:1;min-width:120px"><input class="text-input" value="${item.proveedor||''}" placeholder="Proveedor" onchange="updateMercancia(${i},'proveedor',this.value)"></div>
+          <div style="flex:1;min-width:120px"><input class="cop-input" value="${fmt(item.costo)}" placeholder="Costo total" onfocus="this.value='${item.costo||''}';this.select()" onblur="updateMercancia(${i},'costo',this.value)"></div>
+        </div>
       </div>`;
     });
   }
-  
-  const total = m.reduce((s, x) => s + (x.costo || 0), 0);
+
+  const totEfM = m.reduce((s, x) => s + ((x.metodo||'efectivo') !== "bancolombia" ? (x.costo || 0) : 0), 0);
+  const totBaM = m.reduce((s, x) => s + (x.metodo === "bancolombia" ? (x.costo || 0) : 0), 0);
+  const total = totEfM + totBaM;
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
+    <div class="total-bar" style="background:#3a6b28;color:#e8f5e0;margin-top:0;padding:12px 16px">
+      <span class="tl" style="font-size:11px">Efectivo</span><span class="tv" style="font-size:16px">${fmt(totEfM)}</span>
+    </div>
+    <div class="total-bar" style="background:#154360;color:#d6eaf8;margin-top:0;padding:12px 16px">
+      <span class="tl" style="font-size:11px">Bancolombia</span><span class="tv" style="font-size:16px">${fmt(totBaM)}</span>
+    </div>
+  </div>`;
   html += `<div class="total-bar" style="background:#7a4f0e;color:#fce8c4">
     <span class="tl">Total Mercancía</span><span class="tv">${fmt(total)}</span>
   </div>`;
-  
+
   document.getElementById("tab-mercancia").innerHTML = html;
 }
 
@@ -445,15 +468,31 @@ function renderFijos() {
   html += '<button class="btn-primary" onclick="addFijo()">+ Agregar Gasto Fijo</button></div>';
   
   f.forEach((item, i) => {
-    html += `<div class="fijo-item">
-      <div style="width:140px;flex-shrink:0"><input type="date" class="text-input" value="${item.fecha||''}" onchange="updateFijo(${i},'fecha',this.value)"></div>
-      <input class="text-input name-input" value="${item.name}" onchange="updateFijo(${i},'name',this.value)">
-      <div class="val-input"><input class="cop-input" value="${fmt(item.value)}" onfocus="this.value='${item.value||''}';this.select()" onblur="updateFijo(${i},'value',this.value)"></div>
-      <button class="btn-delete" onclick="removeFijo(${i})">✕</button>
+    html += `<div class="fijo-item" style="flex-direction:column;gap:8px">
+      <input class="text-input" style="font-weight:600;font-size:14px;width:100%" value="${item.name}" onchange="updateFijo(${i},'name',this.value)">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="flex:1;min-width:110px"><input type="date" class="text-input" value="${item.fecha||''}" onchange="updateFijo(${i},'fecha',this.value)"></div>
+        <div style="flex:1;min-width:110px"><select class="select-input" onchange="updateFijo(${i},'metodo',this.value)">
+          <option value="efectivo" ${(item.metodo||'efectivo')!="bancolombia"?"selected":""}>Efectivo</option>
+          <option value="bancolombia" ${item.metodo=="bancolombia"?"selected":""}>Bancolombia</option>
+        </select></div>
+        <div style="flex:1;min-width:110px"><input class="cop-input" value="${fmt(item.value)}" onfocus="this.value='${item.value||''}';this.select()" onblur="updateFijo(${i},'value',this.value)"></div>
+        <button class="btn-delete" onclick="removeFijo(${i})">✕</button>
+      </div>
     </div>`;
   });
-  
-  const total = f.reduce((s, x) => s + (x.value || 0), 0);
+
+  const totEfF = f.reduce((s, x) => s + ((x.metodo||'efectivo') !== "bancolombia" ? (x.value || 0) : 0), 0);
+  const totBaF = f.reduce((s, x) => s + (x.metodo === "bancolombia" ? (x.value || 0) : 0), 0);
+  const total = totEfF + totBaF;
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
+    <div class="total-bar" style="background:#3a6b28;color:#e8f5e0;margin-top:0;padding:12px 16px">
+      <span class="tl" style="font-size:11px">Efectivo</span><span class="tv" style="font-size:16px">${fmt(totEfF)}</span>
+    </div>
+    <div class="total-bar" style="background:#154360;color:#d6eaf8;margin-top:0;padding:12px 16px">
+      <span class="tl" style="font-size:11px">Bancolombia</span><span class="tv" style="font-size:16px">${fmt(totBaF)}</span>
+    </div>
+  </div>`;
   html += `<div class="total-bar" style="background:#5c1a6e;color:#f0d9f7">
     <span class="tl">Total Fijos</span><span class="tv">${fmt(total)}</span>
   </div>`;
@@ -464,7 +503,7 @@ function renderFijos() {
 function addFijo() {
   const key = getKey();
   if (!data.fijos[key]) data.fijos[key] = DEFAULT_FIXED.map(f => ({...f}));
-  data.fijos[key].push({ id: "c_" + Date.now(), name: "Nuevo gasto", value: 0, fecha: new Date().toISOString().split('T')[0] });
+  data.fijos[key].push({ id: "c_" + Date.now(), name: "Nuevo gasto", value: 0, fecha: new Date().toISOString().split('T')[0], metodo: "efectivo" });
   saveData(); renderFijos();
 }
 function updateFijo(i, field, val) {
