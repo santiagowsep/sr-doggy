@@ -105,11 +105,14 @@
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
+  .caja-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+
   @media (max-width: 700px) {
     .ventas-grid { grid-template-columns: 50px 1fr 1fr 80px; }
     .ventas-grid .gh:nth-child(4), .ventas-grid .gc.notes-cell { display: none; }
     .totals-row { grid-template-columns: 1fr; }
     .sum-grid3, .sum-grid4 { grid-template-columns: 1fr 1fr; }
+    .caja-grid { grid-template-columns: 1fr; }
     .tabs { gap: 2px; padding: 10px 12px; }
     .tab-btn { padding: 8px 12px; font-size: 12px; }
     .tab-btn .tab-text { display: none; }
@@ -156,6 +159,10 @@
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
     <span class="tab-text">Gastos Fijos</span>
   </button>
+  <button class="tab-btn" onclick="switchTab('caja', this)">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><path d="M16 14h2v4h-2a2 2 0 010-4z"/></svg>
+    <span class="tab-text">Caja</span>
+  </button>
   <button class="tab-btn" onclick="switchTab('resumen', this)">
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
     <span class="tab-text">Resumen</span>
@@ -168,6 +175,7 @@
   <div id="tab-gastos" class="tab-panel"></div>
   <div id="tab-mercancia" class="tab-panel"></div>
   <div id="tab-fijos" class="tab-panel"></div>
+  <div id="tab-caja" class="tab-panel"></div>
   <div id="tab-resumen" class="tab-panel"></div>
 </div>
 
@@ -268,6 +276,7 @@ function renderCurrentTab() {
     case "gastos": renderGastos(); break;
     case "mercancia": renderMercancia(); break;
     case "fijos": renderFijos(); break;
+    case "caja": renderCaja(); break;
     case "resumen": renderResumen(); break;
   }
 }
@@ -516,6 +525,75 @@ function removeFijo(i) {
   const key = getKey();
   data.fijos[key].splice(i, 1);
   saveData(); renderFijos();
+}
+
+// ============ CAJA ============
+function renderCaja() {
+  const key = getKey();
+  const days = daysInMonth(currentMonth, currentYear);
+  const v = data.ventas?.[key] || {};
+  const g = data.gastos?.[key] || [];
+  const m = data.mercancia?.[key] || [];
+  const f = data.fijos?.[key] || DEFAULT_FIXED;
+
+  let ventasEf = 0, ventasBa = 0;
+  for (let d = 1; d <= days; d++) {
+    ventasEf += (v[d]?.efectivo || 0);
+    ventasBa += (v[d]?.bancolombia || 0);
+  }
+
+  const gastosEf = g.reduce((s, x) => s + ((x.metodo||'efectivo') !== 'bancolombia' ? (x.valor||0) : 0), 0);
+  const gastosBa = g.reduce((s, x) => s + (x.metodo === 'bancolombia' ? (x.valor||0) : 0), 0);
+  const mercEf   = m.reduce((s, x) => s + ((x.metodo||'efectivo') !== 'bancolombia' ? (x.costo||0) : 0), 0);
+  const mercBa   = m.reduce((s, x) => s + (x.metodo === 'bancolombia' ? (x.costo||0) : 0), 0);
+  const fijosEf  = f.reduce((s, x) => s + ((x.metodo||'efectivo') !== 'bancolombia' ? (x.value||0) : 0), 0);
+  const fijosBa  = f.reduce((s, x) => s + (x.metodo === 'bancolombia' ? (x.value||0) : 0), 0);
+
+  const egresosEf = gastosEf + mercEf + fijosEf;
+  const egresosBa = gastosBa + mercBa + fijosBa;
+  const saldoEf = ventasEf - egresosEf;
+  const saldoBa = ventasBa - egresosBa;
+
+  const fmtSaldo = n => n < 0 ? `-${fmt(Math.abs(n))}` : fmt(n);
+
+  const lineRow = (label, val) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0ead0">
+    <span style="font-size:13px;color:${val > 0 ? '#4a5568' : '#aab89a'}">${label}</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:${val > 0 ? '#8b1a1a' : '#ccc'}">${val > 0 ? '-' + fmt(val) : '—'}</span>
+  </div>`;
+
+  const cajaCard = (titulo, bgHeader, colorTxt, ventas, gastos, merc, fijos, egresos, saldo) => {
+    const saldoColor = saldo >= 0 ? '#2d5016' : '#8b1a1a';
+    const saldoBg    = saldo >= 0 ? '#e8f2dc' : '#fce4e4';
+    return `<div style="border-radius:14px;overflow:hidden;border:2px solid ${bgHeader}66">
+      <div style="background:${bgHeader};padding:16px 20px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:${colorTxt};opacity:.8">${titulo}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:${colorTxt};margin-top:4px">${fmt(ventas)}</div>
+        <div style="font-size:11px;color:${colorTxt};opacity:.65;margin-top:2px">ingresos del mes</div>
+      </div>
+      <div style="background:#fefdf5;padding:14px 18px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b7c5e;margin-bottom:8px">Egresos</div>
+        ${lineRow('Gastos variables', gastos)}
+        ${lineRow('Mercancía', merc)}
+        ${lineRow('Gastos fijos', fijos)}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 12px">
+          <span style="font-size:12px;font-weight:700;color:#6b1a1a;text-transform:uppercase;letter-spacing:1px">Total egresos</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#8b1a1a">${egresos > 0 ? '-' + fmt(egresos) : '—'}</span>
+        </div>
+        <div style="border-radius:10px;padding:14px 16px;background:${saldoBg};display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${saldoColor}">Saldo estimado</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:${saldoColor}">${fmtSaldo(saldo)}</span>
+        </div>
+      </div>
+    </div>`;
+  };
+
+  let html = `<h3 class="section-title">Balance de Caja — ${MONTHS[currentMonth]} ${currentYear}</h3>`;
+  html += '<div class="caja-grid">';
+  html += cajaCard('Efectivo', '#3a6b28', '#e8f5e0', ventasEf, gastosEf, mercEf, fijosEf, egresosEf, saldoEf);
+  html += cajaCard('Bancolombia', '#154360', '#d6eaf8', ventasBa, gastosBa, mercBa, fijosBa, egresosBa, saldoBa);
+  html += '</div>';
+
+  document.getElementById("tab-caja").innerHTML = html;
 }
 
 // ============ RESUMEN ============
