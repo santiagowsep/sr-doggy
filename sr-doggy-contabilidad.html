@@ -361,14 +361,14 @@ function renderGastos() {
   const totEfG = g.reduce((s, x) => s + ((x.metodo||'efectivo') !== "bancolombia" ? (x.valor || 0) : 0), 0);
   const totBaG = g.reduce((s, x) => s + (x.metodo === "bancolombia" ? (x.valor || 0) : 0), 0);
   const total = totEfG + totBaG;
-  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
-    <div style="background:#3a6b28;border-radius:10px;padding:12px 8px;text-align:center">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#c8e6b0;letter-spacing:.5px">Efectivo</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#e8f5e0;margin-top:4px">${fmt(totEfG)}</div>
+  html += `<div style="display:flex;gap:8px;margin-top:16px">
+    <div style="flex:1;min-width:0;background:#3a6b28;border-radius:10px;padding:12px 8px;text-align:center;overflow:hidden">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#c8e6b0">Efectivo</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#e8f5e0;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmt(totEfG)}</div>
     </div>
-    <div style="background:#154360;border-radius:10px;padding:12px 8px;text-align:center">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#aed6f1;letter-spacing:.5px">Bancolombia</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#d6eaf8;margin-top:4px">${fmt(totBaG)}</div>
+    <div style="flex:1;min-width:0;background:#154360;border-radius:10px;padding:12px 8px;text-align:center;overflow:hidden">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#aed6f1">Bancolombia</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#d6eaf8;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmt(totBaG)}</div>
     </div>
   </div>`;
   html += `<div class="total-bar" style="background:#8b1a1a;color:#fce4e4">
@@ -411,23 +411,21 @@ function renderMercancia() {
   } else {
     [...m].reverse().forEach((item, ri) => {
       const i = m.length - 1 - ri;
-      html += `<div class="row-item" style="flex-direction:column;gap:8px">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <div style="flex:1;min-width:130px"><input type="date" class="text-input" value="${item.fecha||''}" onchange="updateMercancia(${i},'fecha',this.value)"></div>
-          <div style="flex:1;min-width:130px"><select class="select-input" onchange="updateMercancia(${i},'metodo',this.value)">
+      html += `<div style="background:#fefdf5;border-radius:10px;border:1px solid #e5ddb5;padding:10px 12px;margin-bottom:8px">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <input class="text-input" style="flex:1;min-width:0;font-weight:600" value="${item.producto||''}" placeholder="Producto" onchange="updateMercancia(${i},'producto',this.value)">
+          <div style="width:108px;flex-shrink:0"><input class="cop-input" value="${fmt(item.costo)}" placeholder="Costo" onfocus="this.value='${item.costo||''}';this.select()" onblur="updateMercancia(${i},'costo',this.value)"></div>
+          <button class="btn-delete" onclick="removeMercancia(${i})">✕</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <div style="flex:1;min-width:0"><input type="date" class="text-input" value="${item.fecha||''}" onchange="updateMercancia(${i},'fecha',this.value)"></div>
+          <div style="flex:1;min-width:0"><select class="select-input" onchange="updateMercancia(${i},'metodo',this.value)">
             <option value="efectivo" ${(item.metodo||'efectivo')!="bancolombia"?"selected":""}>Efectivo</option>
             <option value="bancolombia" ${item.metodo=="bancolombia"?"selected":""}>Bancolombia</option>
           </select></div>
-          <button class="btn-delete" onclick="removeMercancia(${i})">✕</button>
+          <div style="width:52px;flex-shrink:0"><input class="cop-input" value="${item.cantidad||1}" style="text-align:center" placeholder="#" onchange="updateMercancia(${i},'cantidad',this.value)"></div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <div style="flex:2;min-width:140px"><input class="text-input" value="${item.producto||''}" placeholder="Producto" onchange="updateMercancia(${i},'producto',this.value)"></div>
-          <div style="width:62px;flex-shrink:0"><input class="cop-input" value="${item.cantidad||1}" style="text-align:center" placeholder="Cant." onchange="updateMercancia(${i},'cantidad',this.value)"></div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <div style="flex:1;min-width:120px"><input class="text-input" value="${item.proveedor||''}" placeholder="Proveedor" onchange="updateMercancia(${i},'proveedor',this.value)"></div>
-          <div style="flex:1;min-width:120px"><input class="cop-input" value="${fmt(item.costo)}" placeholder="Costo total" onfocus="this.value='${item.costo||''}';this.select()" onblur="updateMercancia(${i},'costo',this.value)"></div>
-        </div>
+        <input class="text-input" style="width:100%" value="${item.proveedor||''}" placeholder="Proveedor (opcional)" onchange="updateMercancia(${i},'proveedor',this.value)">
       </div>`;
     });
   }
@@ -435,14 +433,14 @@ function renderMercancia() {
   const totEfM = m.reduce((s, x) => s + ((x.metodo||'efectivo') !== "bancolombia" ? (x.costo || 0) : 0), 0);
   const totBaM = m.reduce((s, x) => s + (x.metodo === "bancolombia" ? (x.costo || 0) : 0), 0);
   const total = totEfM + totBaM;
-  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
-    <div style="background:#3a6b28;border-radius:10px;padding:12px 8px;text-align:center">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#c8e6b0;letter-spacing:.5px">Efectivo</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#e8f5e0;margin-top:4px">${fmt(totEfM)}</div>
+  html += `<div style="display:flex;gap:8px;margin-top:16px">
+    <div style="flex:1;min-width:0;background:#3a6b28;border-radius:10px;padding:12px 8px;text-align:center;overflow:hidden">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#c8e6b0">Efectivo</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#e8f5e0;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmt(totEfM)}</div>
     </div>
-    <div style="background:#154360;border-radius:10px;padding:12px 8px;text-align:center">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#aed6f1;letter-spacing:.5px">Bancolombia</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#d6eaf8;margin-top:4px">${fmt(totBaM)}</div>
+    <div style="flex:1;min-width:0;background:#154360;border-radius:10px;padding:12px 8px;text-align:center;overflow:hidden">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#aed6f1">Bancolombia</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#d6eaf8;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmt(totBaM)}</div>
     </div>
   </div>`;
   html += `<div class="total-bar" style="background:#7a4f0e;color:#fce8c4">
@@ -481,17 +479,17 @@ function renderFijos() {
   html += '<button class="btn-primary" onclick="addFijo()">+ Agregar Gasto Fijo</button></div>';
   
   f.forEach((item, i) => {
-    html += `<div class="fijo-item" style="flex-direction:column;gap:8px">
-      <input class="text-input" style="font-weight:600;font-size:14px;width:100%" value="${item.name}" onchange="updateFijo(${i},'name',this.value)">
+    html += `<div style="background:#fefdf5;border-radius:10px;border:1px solid #e5ddb5;padding:10px 12px;margin-bottom:8px">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <input class="text-input" style="flex:1;min-width:0;font-weight:600" value="${item.name}" placeholder="Nombre" onchange="updateFijo(${i},'name',this.value)">
+        <div style="width:120px;flex-shrink:0"><input class="cop-input" value="${fmt(item.value)}" onfocus="this.value='${item.value||''}';this.select()" onblur="updateFijo(${i},'value',this.value)"></div>
+      </div>
       <div style="display:flex;gap:8px;align-items:center">
-        <div style="flex:1"><input type="date" class="text-input" value="${item.fecha||''}" onchange="updateFijo(${i},'fecha',this.value)"></div>
-        <div style="flex:1"><select class="select-input" onchange="updateFijo(${i},'metodo',this.value)">
+        <div style="flex:1;min-width:0"><input type="date" class="text-input" value="${item.fecha||''}" onchange="updateFijo(${i},'fecha',this.value)"></div>
+        <div style="flex:1;min-width:0"><select class="select-input" onchange="updateFijo(${i},'metodo',this.value)">
           <option value="efectivo" ${(item.metodo||'efectivo')!="bancolombia"?"selected":""}>Efectivo</option>
           <option value="bancolombia" ${item.metodo=="bancolombia"?"selected":""}>Bancolombia</option>
         </select></div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <div style="flex:1"><input class="cop-input" value="${fmt(item.value)}" onfocus="this.value='${item.value||''}';this.select()" onblur="updateFijo(${i},'value',this.value)"></div>
         <button class="btn-delete" onclick="removeFijo(${i})">✕</button>
       </div>
     </div>`;
@@ -500,14 +498,14 @@ function renderFijos() {
   const totEfF = f.reduce((s, x) => s + ((x.metodo||'efectivo') !== "bancolombia" ? (x.value || 0) : 0), 0);
   const totBaF = f.reduce((s, x) => s + (x.metodo === "bancolombia" ? (x.value || 0) : 0), 0);
   const total = totEfF + totBaF;
-  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
-    <div style="background:#3a6b28;border-radius:10px;padding:12px 8px;text-align:center">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#c8e6b0;letter-spacing:.5px">Efectivo</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#e8f5e0;margin-top:4px">${fmt(totEfF)}</div>
+  html += `<div style="display:flex;gap:8px;margin-top:16px">
+    <div style="flex:1;min-width:0;background:#3a6b28;border-radius:10px;padding:12px 8px;text-align:center;overflow:hidden">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#c8e6b0">Efectivo</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#e8f5e0;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmt(totEfF)}</div>
     </div>
-    <div style="background:#154360;border-radius:10px;padding:12px 8px;text-align:center">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#aed6f1;letter-spacing:.5px">Bancolombia</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#d6eaf8;margin-top:4px">${fmt(totBaF)}</div>
+    <div style="flex:1;min-width:0;background:#154360;border-radius:10px;padding:12px 8px;text-align:center;overflow:hidden">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#aed6f1">Bancolombia</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#d6eaf8;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmt(totBaF)}</div>
     </div>
   </div>`;
   html += `<div class="total-bar" style="background:#5c1a6e;color:#f0d9f7">
