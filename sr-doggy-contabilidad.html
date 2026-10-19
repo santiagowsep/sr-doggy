@@ -155,11 +155,15 @@
   .dash-tip b { font-family: 'JetBrains Mono', monospace; }
   .dash-chart-legend { display: flex; gap: 16px; font-size: 12px; color: #2d3a1e; margin-bottom: 8px; flex-wrap: wrap; }
   .dash-chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dash-trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+  .dash-trio .t-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6b7c5e; }
+  .dash-trio .t-val { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: #2d3a1e; margin-top: 3px; white-space: nowrap; }
+  .dash-trio .t-sub { font-size: 11px; color: #8a9670; }
   .dash-alert { font-size: 12px; font-weight: 600; color: #8b1a1a; background: #fce8e8; border-radius: 8px; padding: 8px 12px; margin-top: 12px; }
 
   @media (max-width: 700px) {
     .dash-kpis, .dash-legend { grid-template-columns: 1fr 1fr; }
-    .dash-cats { grid-template-columns: 1fr; }
+    .dash-cats, .dash-trio { grid-template-columns: 1fr; }
     .dash-kpi .k-val { font-size: 17px; }
     .ventas-grid { grid-template-columns: 50px 1fr 1fr 80px; }
     .ventas-grid .gh:nth-child(4), .ventas-grid .gc.notes-cell { display: none; }
@@ -245,12 +249,19 @@
 const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const DAYS_ES = ["dom","lun","mar","mié","jue","vie","sáb"];
 const STORAGE_KEY = "sr_doggy_contabilidad";
+// Gastos fijos: `presupuesto` (o `tarifa` x dias del mes si tipo "diario") es lo que
+// cuesta en el mes; `value` es lo YA pagado, que es lo unico que se resta en caja.
+// `vence` es el dia del mes en que se paga (opcional).
+const FIJO_DEFAULTS = {
+  emp: { tipo: "diario", tarifa: 85000 },
+  arriendo: { tipo: "mensual", presupuesto: 2848000, vence: 8 },
+};
 const DEFAULT_FIXED = [
-  { id: "emp", name: "Empleado", value: 0, fecha: "", metodo: "efectivo" },
-  { id: "luz", name: "Luz", value: 0, fecha: "", metodo: "efectivo" },
-  { id: "agua", name: "Agua", value: 0, fecha: "", metodo: "efectivo" },
-  { id: "internet", name: "Internet", value: 0, fecha: "", metodo: "bancolombia" },
-  { id: "arriendo", name: "Arriendo", value: 0, fecha: "", metodo: "efectivo" },
+  { id: "emp", name: "Empleado", value: 0, fecha: "", metodo: "efectivo", tipo: "diario", tarifa: 85000, presupuesto: 0, vence: "" },
+  { id: "luz", name: "Luz", value: 0, fecha: "", metodo: "efectivo", tipo: "mensual", presupuesto: 0, vence: "" },
+  { id: "agua", name: "Agua", value: 0, fecha: "", metodo: "efectivo", tipo: "mensual", presupuesto: 0, vence: "" },
+  { id: "internet", name: "Internet", value: 0, fecha: "", metodo: "bancolombia", tipo: "mensual", presupuesto: 0, vence: "" },
+  { id: "arriendo", name: "Arriendo", value: 0, fecha: "", metodo: "efectivo", tipo: "mensual", presupuesto: 2848000, vence: 8 },
 ];
 
 let currentMonth = new Date().getMonth();
@@ -664,21 +675,115 @@ function removeMercancia(i) {
 }
 
 // ============ GASTOS FIJOS ============
-function renderFijos() {
+function esMesPasado(y, m) { const h = new Date(); return y * 12 + m < h.getFullYear() * 12 + h.getMonth(); }
+// dia del mes visible hasta el que ya corrio el tiempo (0 si es un mes futuro)
+function diaCorrido() {
+  const h = new Date(), days = daysInMonth(currentMonth, currentYear);
+  const mesIdx = currentYear * 12 + currentMonth, hoyIdx = h.getFullYear() * 12 + h.getMonth();
+  return mesIdx < hoyIdx ? days : mesIdx > hoyIdx ? 0 : h.getDate();
+}
+// completa los campos nuevos en fijos guardados antes de que existiera el presupuesto.
+// En meses pasados lo pagado se toma como lo que costaba, para no inventar deudas viejas.
+function normalizarFijo(item, pasado) {
+  if (item.tipo) return item;
+  const def = FIJO_DEFAULTS[item.id];
+  if (def && !pasado) Object.assign(item, { presupuesto: 0, tarifa: 0, vence: "" }, def);
+  else Object.assign(item, { tipo: "mensual", presupuesto: item.value || 0, tarifa: 0, vence: "" });
+  return item;
+}
+function fijoPresupuesto(item, days) { return item.tipo === "diario" ? (item.tarifa || 0) * days : (item.presupuesto || 0); }
+function fijoPorPagar(item, days) { return Math.max(fijoPresupuesto(item, days) - (item.value || 0), 0); }
+// fijos del mes visible; un mes nuevo hereda la lista del mes anterior (sin lo pagado)
+function fijosDelMes() {
   const key = getKey();
   if (!data.fijos) data.fijos = {};
-  if (!data.fijos[key]) data.fijos[key] = DEFAULT_FIXED.map(f => ({...f}));
-  sortByFecha(data.fijos[key]);
-  const f = data.fijos[key];
-  
+  if (!data.fijos[key]) {
+    const pm = currentMonth === 0 ? 11 : currentMonth - 1, py = currentMonth === 0 ? currentYear - 1 : currentYear;
+    const prev = data.fijos[`${py}-${pm}`];
+    data.fijos[key] = prev && prev.length
+      ? prev.map(x => {
+          normalizarFijo(x, esMesPasado(py, pm));
+          return { id: x.id, name: x.name, tipo: x.tipo, tarifa: x.tarifa || 0, presupuesto: x.presupuesto || 0,
+                   vence: x.vence || "", metodo: x.metodo || "efectivo", value: 0, fecha: "" };
+        })
+      : DEFAULT_FIXED.map(f => ({ ...f }));
+  }
+  const pasado = esMesPasado(currentYear, currentMonth);
+  data.fijos[key].forEach(x => normalizarFijo(x, pasado));
+  return data.fijos[key];
+}
+// texto del estado de un fijo: cuanto falta, cuando vence, cuanto se le debe al empleado
+function estadoFijo(item, days, dia) {
+  const pres = fijoPresupuesto(item, days), falta = fijoPorPagar(item, days);
+  if (pres === 0) return { txt: "Escribe cuánto cuesta para tenerlo en cuenta", color: "#8a9670" };
+  if (falta === 0) return { txt: "✓ Pagado completo", color: "#1f5e49" };
+  let txt = `Falta ${fmt(falta)}`, color = "#2d3a1e";
+  if (item.tipo === "diario") {
+    const debe = Math.max((item.tarifa || 0) * dia - (item.value || 0), 0);
+    if (dia > 0) txt += ` · a hoy le debes ${fmt(debe)} (${dia} días)`;
+  } else if (item.vence) {
+    const v = parseInt(item.vence);
+    const h = new Date(), esActual = currentYear === h.getFullYear() && currentMonth === h.getMonth();
+    if (esMesPasado(currentYear, currentMonth)) { txt += " · quedó sin pagar"; color = "#8b1a1a"; }
+    else if (!esActual) txt += ` · vence el día ${v}`;
+    else if (v < dia) { txt += ` · venció el día ${v}`; color = "#8b1a1a"; }
+    else if (v === dia) { txt += " · vence HOY"; color = "#8b1a1a"; }
+    else { txt += ` · vence en ${v - dia} día${v - dia === 1 ? "" : "s"} (día ${v})`; if (v - dia <= 3) color = "#b8860b"; }
+  }
+  return { txt, color };
+}
+
+function renderFijos() {
+  const f = fijosDelMes();
+  // pendientes con vencimiento primero; los que no tienen dia al final
+  f.sort((a, b) => (parseInt(a.vence) || 99) - (parseInt(b.vence) || 99));
+  const days = daysInMonth(currentMonth, currentYear), dia = diaCorrido();
+
   let html = '<div class="section-header"><h3 class="section-title">Gastos Fijos Mensuales</h3>';
   html += '<button class="btn-primary" onclick="addFijo()">+ Agregar Gasto Fijo</button></div>';
-  
+
+  const presTotal = f.reduce((s, x) => s + fijoPresupuesto(x, days), 0);
+  const pagadoTotal = f.reduce((s, x) => s + (x.value || 0), 0);
+  const faltaTotal = f.reduce((s, x) => s + fijoPorPagar(x, days), 0);
+  html += `<div class="dash-card" style="padding:14px 16px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:#6b7c5e">
+      <div>Cuestan en el mes<div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#2d3a1e">${fmt(presTotal)}</div></div>
+      <div>Pagado<div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#2d3a1e">${fmt(pagadoTotal)}</div></div>
+      <div>Por pagar<div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:${faltaTotal > 0 ? '#8b1a1a' : '#1f5e49'}">${fmt(faltaTotal)}</div></div>
+    </div>
+    <div class="dash-track" style="height:8px;margin-top:10px"><div style="width:${presTotal ? Math.min(pagadoTotal / presTotal * 100, 100) : 0}%;background:${DASH_CAT.fijos.color}"></div></div>
+    <div style="font-size:11px;color:#8a9670;margin-top:6px">Solo lo pagado se resta de la caja. Lo que falta lo ves en el Dashboard.</div>
+  </div>`;
+
+  const lbl = 'style="font-size:11px;color:#8a9670;white-space:nowrap"';
   f.forEach((item, i) => {
+    const pres = fijoPresupuesto(item, days);
+    const est = estadoFijo(item, days, dia);
+    const falta = fijoPorPagar(item, days);
+    const diario = item.tipo === "diario";
+    const montoPagar = diario ? Math.max((item.tarifa || 0) * dia - (item.value || 0), 0) : falta;
     html += `<div style="background:#fefdf5;border-radius:10px;border:1px solid #e5ddb5;padding:10px 12px;margin-bottom:8px">
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-        <input class="text-input" style="flex:1;min-width:0;font-weight:600" value="${item.name}" placeholder="Nombre" onchange="updateFijo(${i},'name',this.value)">
-        <div style="width:120px;flex-shrink:0"><input class="cop-input" value="${fmt(item.value)}" onfocus="this.value='${item.value||''}';this.select()" onblur="updateFijo(${i},'value',this.value)"></div>
+        <input class="text-input" style="flex:1;min-width:0;font-weight:600" value="${esc(item.name)}" placeholder="Nombre" onchange="updateFijo(${i},'name',this.value)">
+        <div style="width:108px;flex-shrink:0"><select class="select-input" onchange="updateFijo(${i},'tipo',this.value)">
+          <option value="mensual" ${!diario ? "selected" : ""}>Mensual</option>
+          <option value="diario" ${diario ? "selected" : ""}>Por día</option>
+        </select></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        ${diario
+          ? `<span ${lbl}>Por día</span>
+             <div style="flex:1;min-width:0"><input class="cop-input" value="${fmt(item.tarifa)}" onfocus="this.value='${item.tarifa || ''}';this.select()" onblur="updateFijo(${i},'tarifa',this.value)"></div>
+             <span ${lbl}>× ${days} días = <b style="color:#2d3a1e">${fmt(pres)}</b></span>`
+          : `<span ${lbl}>Cuesta</span>
+             <div style="flex:1;min-width:0"><input class="cop-input" value="${fmt(item.presupuesto)}" onfocus="this.value='${item.presupuesto || ''}';this.select()" onblur="updateFijo(${i},'presupuesto',this.value)"></div>
+             <span ${lbl}>Vence día</span>
+             <div style="width:52px;flex-shrink:0"><input class="cop-input" style="text-align:center" value="${item.vence || ''}" placeholder="—" onchange="updateFijo(${i},'vence',this.value)"></div>`}
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <span ${lbl}>Pagado</span>
+        <div style="flex:1;min-width:0"><input class="cop-input" value="${fmt(item.value)}" onfocus="this.value='${item.value || ''}';this.select()" onblur="updateFijo(${i},'value',this.value)"></div>
+        <button class="btn-delete" onclick="removeFijo(${i})">✕</button>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <div style="flex:1;min-width:0"><input type="date" class="text-input" value="${item.fecha||''}" onchange="updateFijo(${i},'fecha',this.value)"></div>
@@ -686,7 +791,11 @@ function renderFijos() {
           <option value="efectivo" ${(item.metodo||'efectivo')!="bancolombia"?"selected":""}>Efectivo</option>
           <option value="bancolombia" ${item.metodo=="bancolombia"?"selected":""}>Bancolombia</option>
         </select></div>
-        <button class="btn-delete" onclick="removeFijo(${i})">✕</button>
+      </div>
+      <div class="dash-track" style="margin-top:10px"><div style="width:${pres ? Math.min((item.value || 0) / pres * 100, 100) : 0}%;background:${DASH_CAT.fijos.color}"></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:600;color:${est.color}">${est.txt}</span>
+        ${montoPagar > 0 ? `<button class="dash-link" style="margin:0" onclick="pagarFijo(${i})">${diario ? `Registrar pago de ${fmt(montoPagar)}` : "Marcar pagado"}</button>` : ""}
       </div>
     </div>`;
   });
@@ -705,24 +814,35 @@ function renderFijos() {
     </div>
   </div>`;
   html += `<div class="total-bar" style="background:#5c1a6e;color:#f0d9f7">
-    <span class="tl">Total Fijos</span><span class="tv">${fmt(total)}</span>
+    <span class="tl">Total Pagado</span><span class="tv">${fmt(total)}</span>
   </div>`;
-  
+
   document.getElementById("tab-fijos").innerHTML = html;
 }
 
 function addFijo() {
   const key = getKey();
-  if (!data.fijos[key]) data.fijos[key] = DEFAULT_FIXED.map(f => ({...f}));
-  const nuevo = { id: "c_" + Date.now(), name: "Nuevo gasto", value: 0, fecha: todayLocal(), metodo: "efectivo" };
+  fijosDelMes();
+  const nuevo = { id: "c_" + Date.now(), name: "Nuevo gasto", value: 0, fecha: "", metodo: "efectivo", tipo: "mensual", presupuesto: 0, tarifa: 0, vence: "" };
   data.fijos[key].push(nuevo);
   saveData(); renderFijos();
   focusFila("tab-fijos", data.fijos[key].indexOf(nuevo), 'input[placeholder="Nombre"]');
 }
 function updateFijo(i, field, val) {
   const key = getKey();
-  if (field === "value") val = parseInt(val.replace(/[^0-9-]/g,"")) || 0;
+  if (["value", "presupuesto", "tarifa"].includes(field)) val = parseInt(val.replace(/[^0-9-]/g,"")) || 0;
+  if (field === "vence") { const d = parseInt(val); val = d >= 1 && d <= 31 ? d : ""; }
   data.fijos[key][i][field] = val;
+  saveData(); renderFijos();
+}
+// registra como pagado lo que falta (o, si es por dia, lo causado hasta hoy)
+function pagarFijo(i) {
+  const key = getKey(), item = data.fijos[key][i];
+  const days = daysInMonth(currentMonth, currentYear);
+  item.value = item.tipo === "diario"
+    ? Math.min((item.tarifa || 0) * diaCorrido(), fijoPresupuesto(item, days))
+    : fijoPresupuesto(item, days);
+  item.fecha = todayLocal();
   saveData(); renderFijos();
 }
 function removeFijo(i) {
@@ -1090,7 +1210,7 @@ function renderDashboard() {
   const adic = data.adicionales?.[key] || [];
   const g = data.gastos?.[key] || [];
   const m = data.mercancia?.[key] || [];
-  const f = data.fijos?.[key] || DEFAULT_FIXED;
+  const f = fijosDelMes();
 
   // series por dia
   const ventasDia = Array(days + 1).fill(0);
@@ -1131,6 +1251,76 @@ function renderDashboard() {
     <div class="dash-progress"><div style="width:${days ? diaActual / days * 100 : 0}%"></div></div>
     <div class="k-sub">Promedio ${fmt(Math.round(promedioDia))}/día${esMesActual && totVentas > 0 ? `<br>A este ritmo: <b style="color:#2d3a1e">${fmt(proyeccion)}</b>` : ""}</div></div>`;
   html += '</div>';
+
+  // ---- Me alcanza para los fijos?
+  // "Llevas" = ventas menos todo lo ya pagado. Esa plata se reparte entre los fijos
+  // pendientes en orden de vencimiento para ver cuales ya estan cubiertos.
+  const presFijos = f.reduce((s, x) => s + fijoPresupuesto(x, days), 0);
+  if (presFijos > 0) {
+    const pend = f.map(x => ({ x, falta: fijoPorPagar(x, days), vence: parseInt(x.vence) || 99 }))
+      .filter(p => p.falta > 0).sort((a, b) => a.vence - b.vence);
+    const porPagar = pend.reduce((s, p) => s + p.falta, 0);
+    let disp = Math.max(utilidad, 0);
+    pend.forEach(p => { p.cubierto = Math.min(disp, p.falta); disp -= p.cubierto; });
+    const cubierto = pend.reduce((s, p) => s + p.cubierto, 0);
+    const faltaCubrir = porPagar - cubierto;
+    const libre = utilidad - porPagar;
+    const pagadoF = presFijos - porPagar;
+    const gananciaDia = diaActual > 0 ? (totVentas - tot.mercancia - tot.gastos) / diaActual : 0;
+    const diasRestantes = days - diaActual;
+
+    html += `<div class="dash-card"><div class="dash-card-title">¿Me alcanza para los gastos fijos? <small>cuestan ${fmt(presFijos)} este mes</small></div>`;
+    html += `<div class="dash-trio">
+      <div><div class="t-label">Llevas</div><div class="t-val">${fmt(utilidad)}</div><div class="t-sub">ventas − lo ya pagado</div></div>
+      <div><div class="t-label">Fijos por pagar</div><div class="t-val">${fmt(porPagar)}</div><div class="t-sub">${pend.length} pendiente${pend.length === 1 ? "" : "s"}</div></div>
+      <div><div class="t-label">Libre de verdad</div><div class="t-val" style="color:${libre >= 0 ? '#1f5e49' : '#8b1a1a'}">${fmt(libre)}</div><div class="t-sub">llevas − por pagar</div></div>
+    </div>`;
+
+    // barra: pagado | ya tienes la plata | falta conseguir
+    html += '<div class="dash-stack" style="height:22px">';
+    [[pagadoF, DASH_CAT.fijos.color, "Pagado"], [cubierto, DASH_CAT.utilidad.color, "Ya tienes la plata"]].forEach(([val, col, t]) => {
+      if (val > 0) html += `<div class="seg" style="flex:${val} 0 0;background:${col}" title="${t}: ${fmt(val)}"></div>`;
+    });
+    if (faltaCubrir > 0) html += `<div class="seg" style="flex:${faltaCubrir} 0 0;background:repeating-linear-gradient(135deg,#efe8c8 0 6px,#e5ddb5 6px 12px)" title="Falta conseguir: ${fmt(faltaCubrir)}"></div>`;
+    html += '</div><div class="dash-legend" style="grid-template-columns:repeat(3,auto);justify-content:start;gap:6px 18px">';
+    [[DASH_CAT.fijos.color, "Pagado", pagadoF], [DASH_CAT.utilidad.color, "Ya tienes la plata", cubierto],
+     ["repeating-linear-gradient(135deg,#efe8c8 0 3px,#c9bf8a 3px 6px)", "Falta conseguir", faltaCubrir]].forEach(([bg, t, val]) => {
+      html += `<div class="lg"><div class="dash-sw" style="background:${bg}"></div><div><div class="lg-name">${t}</div><div class="lg-val">${fmt(val)}</div></div></div>`;
+    });
+    html += '</div>';
+
+    let msg, msgBg = "#e8f2dc", msgCol = "#1f5e49";
+    if (porPagar === 0) msg = "✓ Todos los gastos fijos del mes están pagados.";
+    else if (faltaCubrir === 0) msg = `✓ Con lo que llevas ya cubres todos los fijos que faltan y te sobran ${fmt(libre)}.`;
+    else {
+      msgBg = "#fdf1dc"; msgCol = "#7a4f0e";
+      msg = `Te faltan <b>${fmt(faltaCubrir)}</b> para cubrir los fijos.`;
+      if (esMesActual && diasRestantes > 0) {
+        if (gananciaDia > 0) {
+          const n = Math.ceil(faltaCubrir / gananciaDia);
+          msg += ` A tu ritmo (≈${fmt(Math.round(gananciaDia))} de ganancia por día, después de mercancía y gastos) los cubres en <b>${n} día${n === 1 ? "" : "s"}</b>`;
+          msg += n <= diasRestantes ? ", antes de que termine el mes." : `, pero solo quedan ${diasRestantes} días: necesitas ganar ≈${fmt(Math.ceil(faltaCubrir / diasRestantes))} por día.`;
+        } else {
+          msg += " Con el ritmo actual las ventas apenas cubren la mercancía y los gastos.";
+        }
+      }
+    }
+    html += `<div style="font-size:13px;line-height:1.5;color:${msgCol};background:${msgBg};border-radius:8px;padding:10px 12px;margin-top:12px">${msg}</div>`;
+
+    if (pend.length) {
+      html += '<div class="dash-items" style="margin-top:12px">';
+      pend.forEach(p => {
+        const est = estadoFijo(p.x, days, diaActual);
+        const chip = p.cubierto >= p.falta
+          ? `<span style="color:#1f5e49">✓ cubierto</span>`
+          : p.cubierto > 0 ? `<span style="color:#7a4f0e">faltan ${fmt(p.falta - p.cubierto)}</span>` : `<span style="color:#8b1a1a">faltan ${fmt(p.falta)}</span>`;
+        html += `<div class="dash-item" style="margin-bottom:9px"><div class="dash-item-row"><span class="n" style="font-weight:700">${esc(p.x.name)}</span><span class="v">${chip}</span></div>
+          <div style="font-size:11px;color:${est.color === '#2d3a1e' ? '#8a9670' : est.color}">${est.txt}</div></div>`;
+      });
+      html += `</div><button class="dash-link" onclick="irATab('fijos')">Ir a gastos fijos →</button>`;
+    }
+    html += '</div>';
+  }
 
   // ---- A donde se va la plata
   const base = Math.max(totVentas, totEgresos);
@@ -1177,7 +1367,7 @@ function renderDashboard() {
     const top = Object.entries(grupos).filter(([, val]) => val > 0).sort((a, b) => b[1] - a[1]);
     const maxItem = top.length ? top[0][1] : 0;
     let sub = `${pct(total, totEgresos)}% de los egresos · ${pct(total, totVentas)}% de las ventas`;
-    if (c.k === "fijos") sub += `<br>${f.filter(x => (x.value || 0) > 0).length} de ${f.length} registrados`;
+    if (c.k === "fijos") sub += `<br>Pagado ${fmt(total)} de ${fmt(presFijos)}`;
     html += `<div class="dash-cat">
       <div class="dash-cat-head"><div class="dash-sw" style="background:${cfg.color};margin:0"></div>${cfg.label}</div>
       <div class="dash-cat-val">${fmt(total)}</div>
@@ -1307,7 +1497,7 @@ function renderResumen() {
   const v = data.ventas?.[key] || {};
   const g = data.gastos?.[key] || [];
   const m = data.mercancia?.[key] || [];
-  const f = data.fijos?.[key] || DEFAULT_FIXED;
+  const f = fijosDelMes();
   
   let totE = 0, totB = 0;
   for (let d = 1; d <= days; d++) { totE += (v[d]?.efectivo||0); totB += (v[d]?.bancolombia||0); }
@@ -1350,7 +1540,8 @@ function renderResumen() {
   // Desglose fijos
   html += '<div style="margin-top:20px"><div class="sum-section-label">Desglose Gastos Fijos</div>';
   f.forEach(item => {
-    html += `<div class="detail-row"><span class="dr-name">${item.name}</span><span class="dr-val" style="color:#5c1a6e">${fmt(item.value)}</span></div>`;
+    const pres = fijoPresupuesto(item, days);
+    html += `<div class="detail-row"><span class="dr-name">${item.name}</span><span class="dr-val" style="color:#5c1a6e">${fmt(item.value)}${pres > (item.value || 0) ? ` <span style="color:#8a9670;font-weight:500">de ${fmt(pres)}</span>` : ""}</span></div>`;
   });
   html += '</div>';
   
