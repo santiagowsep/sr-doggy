@@ -107,12 +107,66 @@
 
   .caja-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
 
+  /* Arqueo de caja */
+  .arqueo-grid { display: grid; grid-template-columns: 1.2fr 90px 1.3fr; gap: 1px; background: #c9bf8a; border-radius: 12px; overflow: hidden; border: 2px solid #c9bf8a; }
+  .arqueo-grid .agh { padding: 10px 8px; background: #3a5f1c; color: #f5e6a3; font-size: 11px; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+  .arqueo-grid .agc { padding: 6px 10px; background: #fefdf5; display: flex; align-items: center; }
+  .arqueo-grid .ag-sep { grid-column: 1/-1; background: #f0ead0; padding: 5px 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #8a9670; }
+
+  /* Dashboard */
+  .dash-card { background: #fefdf5; border: 1px solid #e5ddb5; border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; }
+  .dash-card-title { font-size: 12px; color: #6b7c5e; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .dash-card-title small { font-size: 11px; text-transform: none; letter-spacing: 0; font-weight: 500; color: #8a9670; }
+  .dash-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .dash-kpi { background: #fefdf5; border: 1px solid #e5ddb5; border-radius: 12px; padding: 14px 16px; }
+  .dash-kpi .k-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6b7c5e; }
+  .dash-kpi .k-val { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: #2d3a1e; margin-top: 6px; white-space: nowrap; }
+  .dash-kpi .k-sub { font-size: 11px; color: #8a9670; margin-top: 3px; }
+  .dash-progress { height: 8px; background: #efe8c8; border-radius: 4px; overflow: hidden; margin: 8px 0 6px; }
+  .dash-progress > div { height: 100%; background: #3a5f1c; border-radius: 4px; }
+  .dash-stack { position: relative; display: flex; gap: 2px; height: 34px; border-radius: 6px; overflow: hidden; background: #efe8c8; }
+  .dash-stack .seg { min-width: 2px; height: 100%; }
+  .dash-stack-wrap { position: relative; }
+  .dash-mark { position: absolute; top: -6px; bottom: -6px; width: 2px; background: #2d3a1e; }
+  .dash-mark span { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; color: #2d3a1e; white-space: nowrap; }
+  .dash-legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+  .dash-legend .lg { display: flex; gap: 8px; align-items: flex-start; }
+  .dash-sw { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; margin-top: 2px; }
+  .dash-legend .lg-name { font-size: 12px; font-weight: 600; color: #2d3a1e; }
+  .dash-legend .lg-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #2d3a1e; }
+  .dash-legend .lg-pct { font-size: 11px; color: #8a9670; }
+  .dash-cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .dash-cat { background: #fefdf5; border: 1px solid #e5ddb5; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; }
+  .dash-cat-head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #2d3a1e; }
+  .dash-cat-val { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: #2d3a1e; margin: 8px 0 4px; }
+  .dash-track { height: 6px; background: #efe8c8; border-radius: 3px; overflow: hidden; }
+  .dash-track > div { height: 100%; border-radius: 3px; }
+  .dash-cat-pct { font-size: 11px; color: #6b7c5e; margin: 6px 0 10px; }
+  .dash-items { border-top: 1px solid #efe8c8; padding-top: 8px; flex: 1; }
+  .dash-item { margin-bottom: 7px; }
+  .dash-item-row { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #2d3a1e; }
+  .dash-item-row .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dash-item-row .v { font-family: 'JetBrains Mono', monospace; font-weight: 600; white-space: nowrap; }
+  .dash-item .dash-track { height: 3px; margin-top: 3px; }
+  .dash-link { margin-top: 8px; background: none; border: none; color: #3a5f1c; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; text-align: left; padding: 0; }
+  .dash-chart { position: relative; }
+  .dash-chart svg { display: block; overflow: visible; }
+  .dash-tip { position: absolute; pointer-events: none; background: #2d3a1e; color: #f5e6a3; border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.5; white-space: nowrap; display: none; box-shadow: 0 4px 12px #00000033; z-index: 2; }
+  .dash-tip b { font-family: 'JetBrains Mono', monospace; }
+  .dash-chart-legend { display: flex; gap: 16px; font-size: 12px; color: #2d3a1e; margin-bottom: 8px; flex-wrap: wrap; }
+  .dash-chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dash-alert { font-size: 12px; font-weight: 600; color: #8b1a1a; background: #fce8e8; border-radius: 8px; padding: 8px 12px; margin-top: 12px; }
+
   @media (max-width: 700px) {
+    .dash-kpis, .dash-legend { grid-template-columns: 1fr 1fr; }
+    .dash-cats { grid-template-columns: 1fr; }
+    .dash-kpi .k-val { font-size: 17px; }
     .ventas-grid { grid-template-columns: 50px 1fr 1fr 80px; }
     .ventas-grid .gh:nth-child(4), .ventas-grid .gc.notes-cell { display: none; }
     .totals-row { grid-template-columns: 1fr; }
     .sum-grid3, .sum-grid4 { grid-template-columns: 1fr 1fr; }
     .caja-grid { grid-template-columns: 1fr; }
+    .arqueo-grid { grid-template-columns: 1fr 74px 1.1fr; }
     .tabs { gap: 2px; padding: 10px 12px; }
     .tab-btn { padding: 8px 12px; font-size: 12px; }
     .tab-btn .tab-text { display: none; }
@@ -135,6 +189,9 @@
     <button onclick="prevMonth()">‹</button>
     <span id="monthLabel"></span>
     <button onclick="nextMonth()">›</button>
+  </div>
+  <div style="text-align:center;margin-top:8px">
+    <button onclick="exportarMesJSON()" title="Descargar todos los datos de este mes en un archivo JSON para analizarlo en Claude" style="background:#f5e6a3;border:none;color:#1a1205;font-size:12px;font-weight:700;cursor:pointer;padding:8px 16px;border-radius:20px;">⬇️ Exportar mes (JSON)</button>
   </div>
   <div style="text-align:center;margin-top:8px;font-size:11px;font-weight:600">
     <span id="sync-indicator" style="color:#b8c9a0">↻ Cargando...</span>
@@ -163,6 +220,10 @@
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><path d="M16 14h2v4h-2a2 2 0 010-4z"/></svg>
     <span class="tab-text">Caja</span>
   </button>
+  <button class="tab-btn" onclick="switchTab('dashboard', this)">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 118 2.83"/><path d="M22 12A10 10 0 0012 2v10z"/></svg>
+    <span class="tab-text">Dashboard</span>
+  </button>
   <button class="tab-btn" onclick="switchTab('resumen', this)">
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
     <span class="tab-text">Resumen</span>
@@ -176,6 +237,7 @@
   <div id="tab-mercancia" class="tab-panel"></div>
   <div id="tab-fijos" class="tab-panel"></div>
   <div id="tab-caja" class="tab-panel"></div>
+  <div id="tab-dashboard" class="tab-panel"></div>
   <div id="tab-resumen" class="tab-panel"></div>
 </div>
 
@@ -195,8 +257,10 @@ let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let currentTab = "ventas";
 const API_URL = "";
-let data = { ventas: {}, gastos: {}, mercancia: {}, fijos: {} };
+let data = { ventas: {}, gastos: {}, mercancia: {}, fijos: {}, traslados: {} };
 let syncStatus = "cargando";
+let trasladoFormOpen = false;
+let trasladoFormDir = 'ef_ba';
 
 function loadData() {
   try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; } catch { return null; }
@@ -247,7 +311,65 @@ function fmtFecha(fecha) {
   return `${p[2]}/${p[1]}/${p[0]}`;
 }
 function daysInMonth(m, y) { return new Date(y, m + 1, 0).getDate(); }
+function todayLocal() {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
 function getKey() { return `${currentYear}-${currentMonth}`; }
+// ordena en sitio por fecha: mas reciente arriba, sin fecha al final.
+// Empate de fecha: lo agregado mas recientemente arriba, para que una fila
+// nueva siempre quede visible en el tope de su grupo.
+function sortByFecha(arr) {
+  const ts = x => { const n = parseInt(String(x.id).replace(/\D/g, ""), 10); return isNaN(n) ? 0 : n; };
+  arr.sort((a, b) => {
+    const fa = a.fecha || "", fb = b.fecha || "";
+    if (fa !== fb) {
+      if (!fa) return 1;
+      if (!fb) return -1;
+      return fb.localeCompare(fa);
+    }
+    return ts(b) - ts(a);
+  });
+  return arr;
+}
+// lleva el foco a la fila recien agregada
+function focusFila(panelId, idx, sel) {
+  if (idx < 0) return;
+  const el = document.getElementById(panelId).querySelectorAll(sel)[idx];
+  if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.focus(); }
+}
+
+function exportarMesJSON() {
+  const key = getKey();
+  const mesIso = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+  const secciones = {
+    ventas: data.ventas?.[key] || {},
+    adicionales: data.adicionales?.[key] || [],
+    gastos: data.gastos?.[key] || [],
+    mercancia: data.mercancia?.[key] || [],
+    fijos: data.fijos?.[key] || [],
+    traslados: data.traslados?.[key] || [],
+    arqueos: data.arqueos?.[key] || [],
+  };
+  const vacio = Object.values(secciones).every(v => Array.isArray(v) ? v.length === 0 : Object.keys(v).length === 0);
+  if (vacio) { alert(`No hay datos registrados para ${MONTHS[currentMonth]} ${currentYear}.`); return; }
+  const payload = {
+    _tipo: "export_mensual",
+    fuente: "sr_doggy_contabilidad",
+    mes: mesIso,
+    mesNombre: `${MONTHS[currentMonth]} ${currentYear}`,
+    exportado: new Date().toISOString(),
+    ...secciones,
+  };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `sr_doggy_contabilidad_${mesIso}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function updateMonthLabel() {
   document.getElementById("monthLabel").textContent = `${MONTHS[currentMonth]} ${currentYear}`;
@@ -277,6 +399,7 @@ function renderCurrentTab() {
     case "mercancia": renderMercancia(); break;
     case "fijos": renderFijos(); break;
     case "caja": renderCaja(); break;
+    case "dashboard": renderDashboard(); break;
     case "resumen": renderResumen(); break;
   }
 }
@@ -292,13 +415,19 @@ function renderVentas() {
   let html = '<div class="ventas-grid">';
   html += '<div class="gh">Día</div><div class="gh">Efectivo</div><div class="gh">Bancolombia</div><div class="gh">Notas</div><div class="gh">Total</div>';
   
+  const todayDate = new Date();
+  const isCurrentMonth = currentMonth === todayDate.getMonth() && currentYear === todayDate.getFullYear();
+  const todayDay = todayDate.getDate();
+
   for (let d = 1; d <= days; d++) {
     if (!v[d]) v[d] = { efectivo: 0, bancolombia: 0, notas: "" };
     const dow = new Date(currentYear, currentMonth, d).getDay();
     const dayName = DAYS_ES[dow];
-    const bg = (dow === 0 || dow === 6) ? "#f0ead0" : "#fefdf5";
-    
-    html += `<div class="gc day-cell" style="background:${bg}">${d}<span class="dn">${dayName}</span></div>`;
+    const isToday = isCurrentMonth && d === todayDay;
+    const bg = isToday ? "#fffbe6" : (dow === 0 || dow === 6) ? "#f0ead0" : "#fefdf5";
+    const todayBorder = isToday ? "box-shadow:inset 3px 0 0 #c9a222;" : "";
+
+    html += `<div class="gc day-cell" style="background:${bg};${todayBorder}${isToday ? 'color:#8b6914;font-weight:900;' : ''}">${d}${isToday ? ' <span style="font-size:9px;color:#c9a222">●</span>' : ''}<span class="dn">${dayName}</span></div>`;
     html += `<div class="gc" style="background:${bg}"><input class="cop-input" value="${fmt(v[d].efectivo)}" onfocus="this.value='${v[d].efectivo||''}';this.select()" onblur="updateVenta(${d},'efectivo',this.value)"></div>`;
     html += `<div class="gc" style="background:${bg}"><input class="cop-input" value="${fmt(v[d].bancolombia)}" onfocus="this.value='${v[d].bancolombia||''}';this.select()" onblur="updateVenta(${d},'bancolombia',this.value)"></div>`;
     html += `<div class="gc notes-cell" style="background:${bg}"><input class="text-input" value="${v[d].notas||''}" placeholder="..." onchange="updateVenta(${d},'notas',this.value)" style="background:transparent"></div>`;
@@ -312,12 +441,47 @@ function renderVentas() {
     totE += (v[d]?.efectivo || 0);
     totB += (v[d]?.bancolombia || 0);
   }
-  
+  const adicionales = (data.adicionales?.[key]) || [];
+  const adicEf = adicionales.reduce((s, x) => s + (x.efectivo || 0), 0);
+  const adicBa = adicionales.reduce((s, x) => s + (x.bancolombia || 0), 0);
+  const totA = adicEf + adicBa;
+
   html += '<div class="totals-row">';
-  html += `<div class="total-card" style="background:#4a7c2e"><div class="tc-label">Total Efectivo</div><div class="tc-val">${fmt(totE)}</div></div>`;
-  html += `<div class="total-card" style="background:#1a5276"><div class="tc-label">Total Bancolombia</div><div class="tc-val">${fmt(totB)}</div></div>`;
-  html += `<div class="total-card" style="background:#2d5016"><div class="tc-label">Total Ventas</div><div class="tc-val">${fmt(totE + totB)}</div></div>`;
+  html += `<div class="total-card" style="background:#4a7c2e"><div class="tc-label">Total Efectivo</div><div class="tc-val">${fmt(totE + adicEf)}</div></div>`;
+  html += `<div class="total-card" style="background:#1a5276"><div class="tc-label">Total Bancolombia</div><div class="tc-val">${fmt(totB + adicBa)}</div></div>`;
+  html += `<div class="total-card" style="background:#2d5016"><div class="tc-label">Total Ventas</div><div class="tc-val">${fmt(totE + totB + totA)}</div></div>`;
   html += '</div>';
+
+  // Bloque adicionales
+  let adicRows = '';
+  adicionales.forEach(a => {
+    adicRows += `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #f0ead0">
+      <span style="font-size:12px;color:#8b6914;white-space:nowrap">${a.fecha||''}</span>
+      <input class="text-input" value="${a.descripcion||''}" placeholder="Descripción" onchange="updateAdicional(${a.id},'descripcion',this.value)" style="flex:1;min-width:100px;background:transparent;border:none;border-bottom:1px solid #c9a22244;border-radius:0;font-size:13px;color:#4a3a00;padding:2px 4px">
+      <div style="display:flex;align-items:center;gap:4px">
+        <span style="font-size:11px;font-weight:700;color:#3a6b28">Ef</span>
+        <input class="cop-input" value="${fmt(a.efectivo)}" onfocus="this.value='${a.efectivo||''}';this.select()" onblur="updateAdicional(${a.id},'efectivo',this.value)" style="width:110px;border-color:#3a6b2866">
+      </div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <span style="font-size:11px;font-weight:700;color:#154360">Ba</span>
+        <input class="cop-input" value="${fmt(a.bancolombia)}" onfocus="this.value='${a.bancolombia||''}';this.select()" onblur="updateAdicional(${a.id},'bancolombia',this.value)" style="width:110px;border-color:#15436066">
+      </div>
+      <button onclick="deleteAdicional(${a.id})" style="background:none;border:none;color:#c0392b;font-size:16px;cursor:pointer;padding:0;line-height:1">✕</button>
+    </div>`;
+  });
+  if (adicionales.length === 0) adicRows = `<div style="text-align:center;color:#c9a22280;font-size:13px;padding:10px 0">Sin ingresos adicionales este mes</div>`;
+
+  html += `<div style="margin-top:18px;background:#fffef5;border:2px solid #c9a22266;border-radius:14px;padding:18px 20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#8b6914">Ingresos Adicionales</div>
+        <div style="font-size:12px;color:#a0845c;margin-top:2px">Dinero extra fuera de las ventas del día</div>
+      </div>
+      <button onclick="addAdicional()" style="background:#c9a222;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">+ Agregar</button>
+    </div>
+    ${adicRows}
+    ${totA > 0 ? `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 0"><span style="font-size:12px;font-weight:700;color:#8b6914;text-transform:uppercase;letter-spacing:1px">Total Adicional</span><span style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#8b6914">${fmt(totA)}</span></div>` : ''}
+  </div>`;
   
   document.getElementById("tab-ventas").innerHTML = html;
 }
@@ -331,11 +495,38 @@ function updateVenta(day, field, val) {
   renderVentas();
 }
 
+function addAdicional() {
+  const key = getKey();
+  if (!data.adicionales) data.adicionales = {};
+  if (!data.adicionales[key]) data.adicionales[key] = [];
+  data.adicionales[key].push({ id: Date.now(), fecha: todayLocal(), descripcion: '', efectivo: 0, bancolombia: 0 });
+  saveData();
+  renderVentas();
+}
+
+function updateAdicional(id, field, val) {
+  const key = getKey();
+  const item = data.adicionales?.[key]?.find(a => a.id === id);
+  if (!item) return;
+  item[field] = (field === 'efectivo' || field === 'bancolombia') ? (parseInt(val.replace(/[^0-9-]/g,"")) || 0) : val;
+  saveData();
+  if (field === 'efectivo' || field === 'bancolombia') renderVentas();
+}
+
+function deleteAdicional(id) {
+  const key = getKey();
+  if (!data.adicionales?.[key]) return;
+  data.adicionales[key] = data.adicionales[key].filter(a => a.id !== id);
+  saveData();
+  renderVentas();
+}
+
 // ============ GASTOS ============
 function renderGastos() {
   const key = getKey();
   if (!data.gastos) data.gastos = {};
   if (!data.gastos[key]) data.gastos[key] = [];
+  sortByFecha(data.gastos[key]);
   const g = data.gastos[key];
 
   let html = '<div class="section-header"><h3 class="section-title">Gastos del Mes</h3>';
@@ -381,8 +572,10 @@ function renderGastos() {
 function addGasto() {
   const key = getKey();
   if (!data.gastos[key]) data.gastos[key] = [];
-  data.gastos[key].push({ id: Date.now(), fecha: new Date().toISOString().split('T')[0], descripcion: "", valor: 0, metodo: "efectivo" });
+  const nuevo = { id: Date.now(), fecha: todayLocal(), descripcion: "", valor: 0, metodo: "efectivo" };
+  data.gastos[key].push(nuevo);
   saveData(); renderGastos();
+  focusFila("tab-gastos", data.gastos[key].indexOf(nuevo), 'input[placeholder="Descripción del gasto"]');
 }
 function updateGasto(i, field, val) {
   const key = getKey();
@@ -401,6 +594,7 @@ function renderMercancia() {
   const key = getKey();
   if (!data.mercancia) data.mercancia = {};
   if (!data.mercancia[key]) data.mercancia[key] = [];
+  sortByFecha(data.mercancia[key]);
   const m = data.mercancia[key];
 
   let html = '<div class="section-header"><h3 class="section-title">Compras de Mercancía</h3>';
@@ -409,8 +603,7 @@ function renderMercancia() {
   if (m.length === 0) {
     html += '<div class="empty-state">No hay compras registradas este mes</div>';
   } else {
-    [...m].reverse().forEach((item, ri) => {
-      const i = m.length - 1 - ri;
+    m.forEach((item, i) => {
       html += `<div style="background:#fefdf5;border-radius:10px;border:1px solid #e5ddb5;padding:10px 12px;margin-bottom:8px">
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
           <input class="text-input" style="flex:1;min-width:0;font-weight:600" value="${item.producto||''}" placeholder="Producto" onchange="updateMercancia(${i},'producto',this.value)">
@@ -453,8 +646,10 @@ function renderMercancia() {
 function addMercancia() {
   const key = getKey();
   if (!data.mercancia[key]) data.mercancia[key] = [];
-  data.mercancia[key].push({ id: Date.now(), fecha: new Date().toISOString().split('T')[0], producto: "", cantidad: 1, costo: 0, proveedor: "", metodo: "efectivo" });
+  const nuevo = { id: Date.now(), fecha: todayLocal(), producto: "", cantidad: 1, costo: 0, proveedor: "", metodo: "efectivo" };
+  data.mercancia[key].push(nuevo);
   saveData(); renderMercancia();
+  focusFila("tab-mercancia", data.mercancia[key].indexOf(nuevo), 'input[placeholder="Producto"]');
 }
 function updateMercancia(i, field, val) {
   const key = getKey();
@@ -473,6 +668,7 @@ function renderFijos() {
   const key = getKey();
   if (!data.fijos) data.fijos = {};
   if (!data.fijos[key]) data.fijos[key] = DEFAULT_FIXED.map(f => ({...f}));
+  sortByFecha(data.fijos[key]);
   const f = data.fijos[key];
   
   let html = '<div class="section-header"><h3 class="section-title">Gastos Fijos Mensuales</h3>';
@@ -518,8 +714,10 @@ function renderFijos() {
 function addFijo() {
   const key = getKey();
   if (!data.fijos[key]) data.fijos[key] = DEFAULT_FIXED.map(f => ({...f}));
-  data.fijos[key].push({ id: "c_" + Date.now(), name: "Nuevo gasto", value: 0, fecha: new Date().toISOString().split('T')[0], metodo: "efectivo" });
+  const nuevo = { id: "c_" + Date.now(), name: "Nuevo gasto", value: 0, fecha: todayLocal(), metodo: "efectivo" };
+  data.fijos[key].push(nuevo);
   saveData(); renderFijos();
+  focusFila("tab-fijos", data.fijos[key].indexOf(nuevo), 'input[placeholder="Nombre"]');
 }
 function updateFijo(i, field, val) {
   const key = getKey();
@@ -534,8 +732,7 @@ function removeFijo(i) {
 }
 
 // ============ CAJA ============
-function renderCaja() {
-  const key = getKey();
+function calcBalanceCaja(key) {
   const days = daysInMonth(currentMonth, currentYear);
   const v = data.ventas?.[key] || {};
   const g = data.gastos?.[key] || [];
@@ -547,6 +744,9 @@ function renderCaja() {
     ventasEf += (v[d]?.efectivo || 0);
     ventasBa += (v[d]?.bancolombia || 0);
   }
+  const adicionales = data.adicionales?.[key] || [];
+  ventasEf += adicionales.reduce((s, x) => s + (x.efectivo || 0), 0);
+  ventasBa += adicionales.reduce((s, x) => s + (x.bancolombia || 0), 0);
 
   const gastosEf = g.reduce((s, x) => s + ((x.metodo||'efectivo') !== 'bancolombia' ? (x.valor||0) : 0), 0);
   const gastosBa = g.reduce((s, x) => s + (x.metodo === 'bancolombia' ? (x.valor||0) : 0), 0);
@@ -557,8 +757,19 @@ function renderCaja() {
 
   const egresosEf = gastosEf + mercEf + fijosEf;
   const egresosBa = gastosBa + mercBa + fijosBa;
-  const saldoEf = ventasEf - egresosEf;
-  const saldoBa = ventasBa - egresosBa;
+  const traslados = data.traslados?.[key] || [];
+  const totalTraslado = traslados.reduce((s, t) => s + (t.monto || 0), 0);
+  const saldoEf = ventasEf - egresosEf - totalTraslado;
+  const saldoBa = ventasBa - egresosBa + totalTraslado;
+
+  return { ventasEf, ventasBa, gastosEf, gastosBa, mercEf, mercBa, fijosEf, fijosBa,
+           egresosEf, egresosBa, traslados, totalTraslado, saldoEf, saldoBa };
+}
+
+function renderCaja() {
+  const key = getKey();
+  const { ventasEf, ventasBa, gastosEf, gastosBa, mercEf, mercBa, fijosEf, fijosBa,
+          egresosEf, egresosBa, traslados, totalTraslado, saldoEf, saldoBa } = calcBalanceCaja(key);
 
   const fmtSaldo = n => n < 0 ? `-${fmt(Math.abs(n))}` : fmt(n);
 
@@ -599,8 +810,495 @@ function renderCaja() {
   html += cajaCard('Bancolombia', '#154360', '#d6eaf8', ventasBa, gastosBa, mercBa, fijosBa, egresosBa, saldoBa);
   html += '</div>';
 
+  // Traslados section
+  let trasladosRows = '';
+  if (traslados.length === 0) {
+    trasladosRows = `<div style="text-align:center;color:#c9a22280;font-size:13px;padding:10px 0">Sin traslados este mes</div>`;
+  } else {
+    traslados.forEach(t => {
+      const esReverso = t.monto < 0;
+      const flecha = esReverso ? '← Ba → Ef' : '→ Ef → Ba';
+      const colorFlecha = esReverso ? '#154360' : '#3a6b28';
+      const montoAbs = fmt(Math.abs(t.monto));
+      trasladosRows += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f5e6b0">
+        <div>
+          <span style="font-size:11px;font-weight:700;color:${colorFlecha};margin-right:6px">${flecha}</span>
+          <span style="font-size:12px;color:#8b6914">${t.fecha}</span>
+          ${t.descripcion ? `<span style="font-size:12px;color:#a0845c;margin-left:6px">${t.descripcion}</span>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:${colorFlecha}">${montoAbs}</span>
+          <button onclick="deleteTraslado(${t.id})" style="background:none;border:none;color:#c0392b;font-size:16px;cursor:pointer;padding:0;line-height:1">✕</button>
+        </div>
+      </div>`;
+    });
+    trasladosRows += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 0">
+      <span style="font-size:12px;font-weight:700;color:#8b6914;text-transform:uppercase;letter-spacing:1px">Neto trasladado a Bancolombia</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#8b6914">${fmt(totalTraslado)}</span>
+    </div>`;
+  }
+
+  html += `<div style="margin-top:22px;background:#fffef5;border:2px solid #c9a22266;border-radius:14px;padding:18px 20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#8b6914">Traslados</div>
+        <div style="font-size:12px;color:#a0845c;margin-top:2px">Entre cajas</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="showTrasladoForm('ef_ba')" style="background:#3a6b28;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">Ef → Ba</button>
+        <button onclick="showTrasladoForm('ba_ef')" style="background:#154360;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">↩ Reversar Ba → Ef</button>
+      </div>
+    </div>
+    <div id="traslado-form" style="display:${trasladoFormOpen ? 'flex' : 'none'};background:#fff8e6;border-radius:10px;padding:14px;margin-bottom:12px;gap:10px;flex-wrap:wrap;align-items:flex-end">
+      <input type="hidden" id="traslado-dir" value="${trasladoFormDir}">
+      <div style="width:100%;font-size:12px;font-weight:700;color:#8b6914" id="traslado-label">${trasladoFormDir === 'ba_ef' ? 'Bancolombia → Efectivo (reverso)' : 'Efectivo → Bancolombia'}</div>
+      <div>
+        <div style="font-size:11px;color:#8b6914;margin-bottom:4px">Monto</div>
+        <input id="traslado-monto" type="number" placeholder="0" style="border:2px solid #c9a22266;border-radius:6px;padding:7px 10px;font-size:15px;width:130px">
+      </div>
+      <div style="flex:1;min-width:140px">
+        <div style="font-size:11px;color:#8b6914;margin-bottom:4px">Descripción</div>
+        <input id="traslado-desc" type="text" placeholder="(opcional)" style="border:2px solid #c9a22266;border-radius:6px;padding:7px 10px;font-size:13px;width:100%;box-sizing:border-box">
+      </div>
+      <button onclick="confirmTraslado()" style="background:#c9a222;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer">✓ Confirmar</button>
+      <button onclick="cancelTrasladoForm()" style="background:#ddd;color:#555;border:none;border-radius:8px;padding:9px 14px;font-size:13px;cursor:pointer">✕</button>
+    </div>
+    ${trasladosRows}
+  </div>`;
+
+  // Arqueo de Caja
+  const arqueos = data.arqueos?.[key] || [];
+  const arqTotal = arqueoTotal();
+  const ver = arqueoVeredicto(arqTotal - saldoEf);
+
+  let arqFilas = '';
+  DENOMINACIONES.forEach(den => {
+    if (den === 100000) arqFilas += '<div class="ag-sep">Billetes</div>';
+    if (den === 1000)   arqFilas += '<div class="ag-sep">Monedas</div>';
+    const cant = arqueoCantidades[den] || 0;
+    const sub = den * cant;
+    arqFilas += `<div class="agc" style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#2d3a1e">${fmt(den)}</div>`;
+    arqFilas += `<div class="agc"><input type="number" id="arq-cant-${den}" min="0" step="1" inputmode="numeric" class="cop-input" style="text-align:center" placeholder="0" value="${cant || ''}" oninput="updateArqueoCantidad(${den}, this.value)" onblur="this.value = arqueoCantidades[${den}] || ''"></div>`;
+    arqFilas += `<div class="agc" style="justify-content:flex-end"><span id="arq-sub-${den}" style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:${sub > 0 ? '#2d5016' : '#ccc'}">${sub > 0 ? fmt(sub) : '—'}</span></div>`;
+  });
+
+  let arqueoRows = '';
+  if (arqueos.length === 0) {
+    arqueoRows = `<div style="text-align:center;color:#c9a22280;font-size:13px;padding:10px 0">Sin arqueos guardados este mes</div>`;
+  } else {
+    [...arqueos].sort((a, b) => b.id - a.id).forEach(a => {
+      const va = arqueoVeredicto(a.diferencia || 0);
+      arqueoRows += `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid #f5e6b0">
+        <div style="min-width:0">
+          <span style="font-size:12px;color:#8b6914;font-weight:700">${fmtFecha(a.fecha)}</span>
+          <span style="font-size:11px;color:#a0845c;margin-left:4px">${a.hora || ''}</span>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#2d3a1e;margin-top:2px">${fmt(a.totalContado)} <span style="font-size:11px;color:#a0845c;font-weight:400">contado</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${va.color};background:${va.bg};border-radius:8px;padding:5px 10px">${va.txt}</span>
+          <button onclick="deleteArqueo(${a.id})" style="background:none;border:none;color:#c0392b;font-size:16px;cursor:pointer;padding:0;line-height:1">✕</button>
+        </div>
+      </div>`;
+    });
+  }
+
+  html += `<div style="margin-top:22px;background:#fffef5;border:2px solid #c9a22266;border-radius:14px;padding:18px 20px">
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#8b6914">Arqueo de Caja</div>
+      <div style="font-size:12px;color:#a0845c;margin-top:2px">Conteo físico del efectivo vs saldo estimado</div>
+    </div>
+    <div class="arqueo-grid">
+      <div class="agh">Denominación</div><div class="agh">Cantidad</div><div class="agh">Subtotal</div>
+      ${arqFilas}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;background:#3a5f1c;border-radius:10px;padding:12px 16px">
+      <span style="font-size:12px;font-weight:700;color:#f5e6a3;text-transform:uppercase;letter-spacing:1px;opacity:.85">Total contado</span>
+      <span id="arq-total" style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:#f5e6a3">${fmt(arqTotal)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 4px 0">
+      <span style="font-size:12px;color:#6b7c5e;font-weight:600">Saldo estimado (Efectivo)</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:${saldoEf >= 0 ? '#2d5016' : '#8b1a1a'}">${fmtSaldo(saldoEf)}</span>
+    </div>
+    <div id="arq-verdict" style="margin-top:12px;border-radius:10px;padding:12px 16px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:${ver.color};background:${ver.bg}">${ver.txt}</div>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+      <button onclick="guardarArqueo()" style="flex:1;background:#c9a222;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer">💾 Guardar arqueo</button>
+      <button onclick="limpiarArqueo()" style="background:#ddd;color:#555;border:none;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer">Limpiar</button>
+    </div>
+    <div style="margin-top:18px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#8b6914;margin-bottom:6px">Historial</div>
+      ${arqueoRows}
+    </div>
+  </div>`;
+
   document.getElementById("tab-caja").innerHTML = html;
 }
+
+function showTrasladoForm(dir) {
+  trasladoFormOpen = true;
+  trasladoFormDir = dir;
+  renderCaja();
+  setTimeout(() => { document.getElementById('traslado-monto')?.focus(); }, 50);
+}
+
+function cancelTrasladoForm() {
+  trasladoFormOpen = false;
+  renderCaja();
+}
+
+function confirmTraslado() {
+  const key = getKey();
+  const monto = parseFloat(document.getElementById('traslado-monto')?.value) || 0;
+  if (monto <= 0) { alert('Ingresa un monto válido'); return; }
+  const dir = document.getElementById('traslado-dir')?.value || trasladoFormDir;
+  const desc = document.getElementById('traslado-desc')?.value || '';
+  const montoFinal = dir === 'ba_ef' ? -monto : monto;
+  if (!data.traslados) data.traslados = {};
+  if (!data.traslados[key]) data.traslados[key] = [];
+  data.traslados[key].push({ id: Date.now(), fecha: todayLocal(), descripcion: desc, monto: montoFinal });
+  saveData();
+  trasladoFormDir = dir;
+  trasladoFormOpen = true;
+  renderCaja();
+  setTimeout(() => { document.getElementById('traslado-monto')?.focus(); }, 50);
+}
+
+function deleteTraslado(id) {
+  const key = getKey();
+  if (!data.traslados?.[key]) return;
+  data.traslados[key] = data.traslados[key].filter(t => t.id !== id);
+  saveData();
+  renderCaja();
+}
+
+// ============ ARQUEO DE CAJA ============
+const DENOMINACIONES = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100, 50];
+let arqueoCantidades = Object.fromEntries(DENOMINACIONES.map(d => [d, 0]));
+
+function resetArqueoCantidades() {
+  DENOMINACIONES.forEach(d => arqueoCantidades[d] = 0);
+}
+
+function arqueoTotal() {
+  return DENOMINACIONES.reduce((s, den) => s + den * (arqueoCantidades[den] || 0), 0);
+}
+
+function arqueoVeredicto(dif) {
+  if (dif === 0) return { txt: "✓ Caja empatada", color: "#2d5016", bg: "#e8f2dc" };
+  if (dif < 0)  return { txt: "Falta " + fmt(-dif), color: "#8b1a1a", bg: "#fce4e4" };
+  return { txt: "Sobra " + fmt(dif), color: "#8b6914", bg: "#fff8e6" };
+}
+
+function nowBogota() {
+  const d = new Date();
+  const fecha = d.toLocaleDateString("en-CA", { timeZone: "America/Bogota" });
+  const hora = d.toLocaleTimeString("es-CO", { timeZone: "America/Bogota", hour: "2-digit", minute: "2-digit", hour12: true });
+  return { fecha, hora };
+}
+
+function updateArqueoCantidad(den, val) {
+  let n = parseInt(val, 10);
+  if (!Number.isFinite(n) || n < 0) n = 0;
+  arqueoCantidades[den] = n;
+  const sub = den * n;
+  const subEl = document.getElementById("arq-sub-" + den);
+  if (subEl) {
+    subEl.textContent = sub > 0 ? fmt(sub) : "—";
+    subEl.style.color = sub > 0 ? "#2d5016" : "#ccc";
+  }
+  const total = arqueoTotal();
+  const totEl = document.getElementById("arq-total");
+  if (totEl) totEl.textContent = fmt(total);
+  const { saldoEf } = calcBalanceCaja(getKey());
+  const ver = arqueoVeredicto(total - saldoEf);
+  const verEl = document.getElementById("arq-verdict");
+  if (verEl) {
+    verEl.textContent = ver.txt;
+    verEl.style.color = ver.color;
+    verEl.style.background = ver.bg;
+  }
+}
+
+function guardarArqueo() {
+  const key = getKey();
+  const total = arqueoTotal();
+  const { saldoEf } = calcBalanceCaja(key);
+  const { fecha, hora } = nowBogota();
+  if (!data.arqueos) data.arqueos = {};
+  if (!data.arqueos[key]) data.arqueos[key] = [];
+  data.arqueos[key].push({
+    id: Date.now(),
+    fecha, hora,
+    cantidades: { ...arqueoCantidades },
+    totalContado: total,
+    saldoEstimado: saldoEf,
+    diferencia: total - saldoEf
+  });
+  saveData();
+  resetArqueoCantidades();
+  renderCaja();
+}
+
+function limpiarArqueo() {
+  resetArqueoCantidades();
+  renderCaja();
+}
+
+function deleteArqueo(id) {
+  const key = getKey();
+  if (!data.arqueos?.[key]) return;
+  data.arqueos[key] = data.arqueos[key].filter(a => a.id !== id);
+  saveData();
+  renderCaja();
+}
+
+// ============ DASHBOARD ============
+// colores validados para daltonismo en este orden (gastos, fijos, mercancia, utilidad)
+const DASH_CAT = {
+  gastos:    { label: "Gastos",       color: "#c0392b" },
+  fijos:     { label: "Gastos Fijos", color: "#8e44ad" },
+  mercancia: { label: "Mercancía",    color: "#c27c14" },
+  utilidad:  { label: "Utilidad",     color: "#2a8a6a" },
+};
+let dashChart = null;
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+function fmtShort(n) {
+  const a = Math.abs(n), s = n < 0 ? "-$" : "$";
+  if (a >= 1e6) return s + (a / 1e6).toLocaleString("es-CO", { maximumFractionDigits: 1 }) + "M";
+  if (a >= 1e3) return s + Math.round(a / 1e3).toLocaleString("es-CO") + "k";
+  return s + a;
+}
+function pct(a, b) { return b > 0 ? Math.round(a / b * 100) : 0; }
+// dia del mes visible al que pertenece una fecha; sin fecha o fuera del mes -> dia 1
+function diaDelMes(fecha, days) {
+  if (typeof fecha === "number") return Math.min(Math.max(fecha, 1), days);
+  const p = String(fecha || "").split("-");
+  if (p.length === 3 && +p[0] === currentYear && +p[1] === currentMonth + 1) return Math.min(Math.max(parseInt(p[2]) || 1, 1), days);
+  return 1;
+}
+function irATab(tab) {
+  const btn = document.querySelector(`.tab-btn[onclick*="'${tab}'"]`);
+  if (btn) { switchTab(tab, btn); window.scrollTo({ top: 0, behavior: "smooth" }); }
+}
+
+function renderDashboard() {
+  const key = getKey();
+  const days = daysInMonth(currentMonth, currentYear);
+  const v = data.ventas?.[key] || {};
+  const adic = data.adicionales?.[key] || [];
+  const g = data.gastos?.[key] || [];
+  const m = data.mercancia?.[key] || [];
+  const f = data.fijos?.[key] || DEFAULT_FIXED;
+
+  // series por dia
+  const ventasDia = Array(days + 1).fill(0);
+  const egresosDia = Array(days + 1).fill(0);
+  for (let d = 1; d <= days; d++) ventasDia[d] = (v[d]?.efectivo || 0) + (v[d]?.bancolombia || 0);
+  adic.forEach(a => ventasDia[diaDelMes(a.fecha, days)] += (a.efectivo || 0) + (a.bancolombia || 0));
+  g.forEach(x => egresosDia[diaDelMes(x.fecha, days)] += (x.valor || 0));
+  m.forEach(x => egresosDia[diaDelMes(x.fecha, days)] += (x.costo || 0));
+  f.forEach(x => egresosDia[diaDelMes(x.fecha, days)] += (x.value || 0));
+
+  const tot = {
+    gastos: g.reduce((s, x) => s + (x.valor || 0), 0),
+    fijos: f.reduce((s, x) => s + (x.value || 0), 0),
+    mercancia: m.reduce((s, x) => s + (x.costo || 0), 0),
+  };
+  const totVentas = ventasDia.reduce((s, x) => s + x, 0);
+  const totEgresos = tot.gastos + tot.fijos + tot.mercancia;
+  const utilidad = totVentas - totEgresos;
+
+  // en que punto del mes estamos
+  const hoy = new Date();
+  const mesIdx = currentYear * 12 + currentMonth, hoyIdx = hoy.getFullYear() * 12 + hoy.getMonth();
+  const esMesActual = mesIdx === hoyIdx;
+  const diaActual = mesIdx < hoyIdx ? days : mesIdx > hoyIdx ? 0 : hoy.getDate();
+  const diasConVenta = ventasDia.filter(x => x > 0).length;
+  const promedioDia = diaActual > 0 ? totVentas / diaActual : 0;
+  const proyeccion = esMesActual ? Math.round(promedioDia * days) : totVentas;
+
+  let html = `<h3 class="section-title">Dashboard — ${MONTHS[currentMonth]} ${currentYear}</h3>`;
+
+  // ---- KPIs
+  const progresoTxt = esMesActual ? `Día ${diaActual} de ${days}` : mesIdx < hoyIdx ? "Mes cerrado" : "Aún no empieza";
+  html += '<div class="dash-kpis">';
+  html += `<div class="dash-kpi"><div class="k-label">Ventas</div><div class="k-val">${fmt(totVentas)}</div><div class="k-sub">${diasConVenta} días con venta</div></div>`;
+  html += `<div class="dash-kpi"><div class="k-label">Egresos</div><div class="k-val">${fmt(totEgresos)}</div><div class="k-sub">${pct(totEgresos, totVentas)}% de las ventas</div></div>`;
+  html += `<div class="dash-kpi" style="${utilidad < 0 ? 'background:#fce8e8;border-color:#e8b8b8' : ''}"><div class="k-label">${utilidad >= 0 ? "Utilidad" : "Pérdida"}</div><div class="k-val" style="color:${utilidad >= 0 ? '#1f5e49' : '#8b1a1a'}">${fmt(utilidad)}</div><div class="k-sub">Margen ${totVentas > 0 ? pct(utilidad, totVentas) + "%" : "—"}</div></div>`;
+  html += `<div class="dash-kpi"><div class="k-label">${progresoTxt}</div>
+    <div class="dash-progress"><div style="width:${days ? diaActual / days * 100 : 0}%"></div></div>
+    <div class="k-sub">Promedio ${fmt(Math.round(promedioDia))}/día${esMesActual && totVentas > 0 ? `<br>A este ritmo: <b style="color:#2d3a1e">${fmt(proyeccion)}</b>` : ""}</div></div>`;
+  html += '</div>';
+
+  // ---- A donde se va la plata
+  const base = Math.max(totVentas, totEgresos);
+  html += `<div class="dash-card"><div class="dash-card-title">¿A dónde se va la plata? <small>de cada $100 vendidos</small></div>`;
+  if (base === 0) {
+    html += '<div class="empty-state" style="padding:24px">Todavía no hay ventas ni gastos este mes</div>';
+  } else {
+    const segs = ["gastos", "fijos", "mercancia"].map(k => ({ k, val: tot[k] }));
+    if (utilidad > 0) segs.push({ k: "utilidad", val: utilidad });
+    html += '<div class="dash-stack-wrap" style="margin-top:18px"><div class="dash-stack">';
+    segs.filter(s => s.val > 0).forEach(s => {
+      html += `<div class="seg" style="flex:${s.val} 0 0;background:${DASH_CAT[s.k].color}" title="${DASH_CAT[s.k].label}: ${fmt(s.val)} (${pct(s.val, totVentas)}% de ventas)"></div>`;
+    });
+    html += '</div>';
+    if (totEgresos > totVentas && totVentas > 0) {
+      html += `<div class="dash-mark" style="left:${totVentas / base * 100}%"><span>Ventas</span></div>`;
+    }
+    html += '</div><div class="dash-legend">';
+    segs.forEach(s => {
+      html += `<div class="lg"><div class="dash-sw" style="background:${DASH_CAT[s.k].color}"></div><div>
+        <div class="lg-name">${DASH_CAT[s.k].label}</div>
+        <div class="lg-val">${fmt(s.val)}</div>
+        <div class="lg-pct">${totVentas > 0 ? `$${pct(s.val, totVentas)} de cada $100` : "—"}</div></div></div>`;
+    });
+    html += '</div>';
+    if (totEgresos > totVentas) {
+      html += `<div class="dash-alert">⚠ Los egresos superan las ventas en ${fmt(totEgresos - totVentas)}</div>`;
+    }
+  }
+  html += '</div>';
+
+  // ---- Categorias
+  const cats = [
+    { k: "mercancia", tab: "mercancia", items: m.map(x => ({ n: x.producto || "Sin nombre", v: x.costo || 0 })) },
+    { k: "fijos", tab: "fijos", items: f.map(x => ({ n: x.name || "Sin nombre", v: x.value || 0 })) },
+    { k: "gastos", tab: "gastos", items: g.map(x => ({ n: x.descripcion || "Sin descripción", v: x.valor || 0 })) },
+  ];
+  html += '<div class="dash-cats">';
+  cats.forEach(c => {
+    const cfg = DASH_CAT[c.k], total = tot[c.k];
+    // agrupa por nombre para que compras repetidas sumen
+    const grupos = {};
+    c.items.forEach(it => { const n = it.n.trim() || "Sin nombre"; grupos[n] = (grupos[n] || 0) + it.v; });
+    const top = Object.entries(grupos).filter(([, val]) => val > 0).sort((a, b) => b[1] - a[1]);
+    const maxItem = top.length ? top[0][1] : 0;
+    let sub = `${pct(total, totEgresos)}% de los egresos · ${pct(total, totVentas)}% de las ventas`;
+    if (c.k === "fijos") sub += `<br>${f.filter(x => (x.value || 0) > 0).length} de ${f.length} registrados`;
+    html += `<div class="dash-cat">
+      <div class="dash-cat-head"><div class="dash-sw" style="background:${cfg.color};margin:0"></div>${cfg.label}</div>
+      <div class="dash-cat-val">${fmt(total)}</div>
+      <div class="dash-track"><div style="width:${pct(total, totEgresos)}%;background:${cfg.color}"></div></div>
+      <div class="dash-cat-pct">${sub}</div>
+      <div class="dash-items">`;
+    if (top.length === 0) {
+      html += '<div style="font-size:12px;color:#8a9670">Sin registros este mes</div>';
+    } else {
+      top.slice(0, 5).forEach(([n, val]) => {
+        html += `<div class="dash-item"><div class="dash-item-row"><span class="n" title="${esc(n)}">${esc(n)}</span><span class="v">${fmt(val)}</span></div>
+          <div class="dash-track"><div style="width:${val / maxItem * 100}%;background:${cfg.color}"></div></div></div>`;
+      });
+      if (top.length > 5) {
+        const resto = top.slice(5).reduce((s, [, val]) => s + val, 0);
+        html += `<div class="dash-item-row" style="color:#8a9670"><span>+${top.length - 5} más</span><span class="v">${fmt(resto)}</span></div>`;
+      }
+    }
+    html += `</div><button class="dash-link" onclick="irATab('${c.tab}')">Ver detalle →</button></div>`;
+  });
+  html += '</div>';
+
+  // ---- Como va el mes (acumulado)
+  html += `<div class="dash-card"><div class="dash-card-title">¿Cómo va el mes? <small>ventas y egresos acumulados día a día</small></div>`;
+  if (diaActual === 0 || base === 0) {
+    html += '<div class="empty-state" style="padding:24px">Sin datos para graficar todavía</div></div>';
+    document.getElementById("tab-dashboard").innerHTML = html;
+    dashChart = null;
+    return;
+  }
+  html += `<div class="dash-chart-legend">
+    <span><svg width="22" height="10"><line x1="1" y1="5" x2="21" y2="5" stroke="${DASH_CAT.utilidad.color}" stroke-width="2.5"/></svg>Ventas</span>
+    <span><svg width="22" height="10"><line x1="1" y1="5" x2="21" y2="5" stroke="${DASH_CAT.gastos.color}" stroke-width="2.5" stroke-dasharray="5 3"/></svg>Egresos</span>
+  </div><div class="dash-chart" id="dash-chart"></div></div>`;
+  document.getElementById("tab-dashboard").innerHTML = html;
+
+  const acV = [0], acE = [0];
+  for (let d = 1; d <= days; d++) { acV[d] = acV[d - 1] + ventasDia[d]; acE[d] = acE[d - 1] + egresosDia[d]; }
+  dashChart = { days, last: diaActual, acV, acE, ventasDia, egresosDia, esMesActual };
+  drawDashChart();
+}
+
+function drawDashChart() {
+  const host = document.getElementById("dash-chart");
+  if (!host || !dashChart) return;
+  const { days, last, acV, acE, esMesActual } = dashChart;
+  const W = Math.max(host.clientWidth, 280), H = 240;
+  const ml = 46, mr = 62, mt = 12, mb = 24;
+  const pw = W - ml - mr, ph = H - mt - mb;
+  const rawMax = Math.max(acV[last], acE[last], 1);
+  const mag = Math.pow(10, Math.floor(Math.log10(rawMax)));
+  const step = [1, 2, 2.5, 5, 10].map(s => s * mag).find(s => rawMax / s <= 4) || mag * 10;
+  const yMax = Math.ceil(rawMax / step) * step;
+  const x = d => ml + (days > 1 ? (d - 1) / (days - 1) : 0) * pw;
+  const y = val => mt + (1 - val / yMax) * ph;
+  Object.assign(dashChart, { W, ml, pw, x, y });
+
+  let s = `<svg width="${W}" height="${H}" role="img" aria-label="Ventas y egresos acumulados del mes">`;
+  for (let t = 0; t <= yMax + 1; t += step) {
+    s += `<line x1="${ml}" x2="${ml + pw}" y1="${y(t)}" y2="${y(t)}" stroke="${t === 0 ? '#c9bf8a' : '#efe8c8'}" stroke-width="1"/>`;
+    s += `<text x="${ml - 6}" y="${y(t) + 4}" text-anchor="end" font-size="10" fill="#8a9670" font-family="JetBrains Mono, monospace">${fmtShort(t)}</text>`;
+  }
+  [1, 5, 10, 15, 20, 25, days].filter((d, i, a) => d <= days && a.indexOf(d) === i && !(d !== days && days - d < 3)).forEach(d => {
+    s += `<text x="${x(d)}" y="${H - 6}" text-anchor="middle" font-size="10" fill="#8a9670">${d}</text>`;
+  });
+  if (esMesActual && last < days) {
+    s += `<line x1="${x(last)}" x2="${x(last)}" y1="${mt}" y2="${mt + ph}" stroke="#c9a222" stroke-width="1" stroke-dasharray="3 3"/>`;
+    s += `<text x="${x(last)}" y="${mt - 2}" text-anchor="middle" font-size="10" font-weight="700" fill="#8b6914">Hoy</text>`;
+  }
+  const path = arr => { let p = ""; for (let d = 1; d <= last; d++) p += (d === 1 ? "M" : "L") + x(d).toFixed(1) + "," + y(arr[d]).toFixed(1); return p; };
+  s += `<path d="${path(acE)}" fill="none" stroke="${DASH_CAT.gastos.color}" stroke-width="2" stroke-dasharray="5 3" stroke-linejoin="round"/>`;
+  s += `<path d="${path(acV)}" fill="none" stroke="${DASH_CAT.utilidad.color}" stroke-width="2" stroke-linejoin="round"/>`;
+
+  // etiquetas al final de cada linea, separadas si se pisan
+  let yv = y(acV[last]), ye = y(acE[last]);
+  if (Math.abs(yv - ye) < 14) { const mid = (yv + ye) / 2, up = acV[last] >= acE[last]; yv = mid + (up ? -7 : 7); ye = mid + (up ? 7 : -7); }
+  [[acE, DASH_CAT.gastos.color, ye], [acV, DASH_CAT.utilidad.color, yv]].forEach(([arr, col, ly]) => {
+    s += `<circle cx="${x(last)}" cy="${y(arr[last])}" r="4" fill="${col}" stroke="#fefdf5" stroke-width="2"/>`;
+    s += `<text x="${x(last) + 8}" y="${ly + 4}" font-size="11" font-weight="700" fill="#2d3a1e" font-family="JetBrains Mono, monospace">${fmtShort(arr[last])}</text>`;
+  });
+
+  s += `<line id="dash-cross" x1="0" x2="0" y1="${mt}" y2="${mt + ph}" stroke="#2d3a1e" stroke-width="1" style="display:none"/>`;
+  s += `<circle id="dash-dot-v" r="4" fill="${DASH_CAT.utilidad.color}" stroke="#fefdf5" stroke-width="2" style="display:none"/>`;
+  s += `<circle id="dash-dot-e" r="4" fill="${DASH_CAT.gastos.color}" stroke="#fefdf5" stroke-width="2" style="display:none"/>`;
+  s += `<rect x="${ml}" y="0" width="${pw}" height="${H}" fill="transparent" style="cursor:crosshair"
+    onmousemove="dashHover(event.clientX)" ontouchstart="dashHover(event.touches[0].clientX)" ontouchmove="dashHover(event.touches[0].clientX)" onmouseleave="dashHoverOut()"/>`;
+  s += '</svg><div class="dash-tip" id="dash-tip"></div>';
+  host.innerHTML = s;
+}
+
+function dashHover(clientX) {
+  const c = dashChart, host = document.getElementById("dash-chart");
+  if (!c || !host) return;
+  const rel = clientX - host.getBoundingClientRect().left;
+  const d = Math.min(Math.max(Math.round((rel - c.ml) / c.pw * (c.days - 1)) + 1, 1), c.last);
+  const cx = c.x(d);
+  const cross = document.getElementById("dash-cross"), dv = document.getElementById("dash-dot-v"), de = document.getElementById("dash-dot-e");
+  cross.setAttribute("x1", cx); cross.setAttribute("x2", cx); cross.style.display = "";
+  dv.setAttribute("cx", cx); dv.setAttribute("cy", c.y(c.acV[d])); dv.style.display = "";
+  de.setAttribute("cx", cx); de.setAttribute("cy", c.y(c.acE[d])); de.style.display = "";
+  const dif = c.acV[d] - c.acE[d];
+  const dow = DAYS_ES[new Date(currentYear, currentMonth, d).getDay()];
+  const tip = document.getElementById("dash-tip");
+  tip.innerHTML = `<div style="font-weight:700;margin-bottom:2px">${dow} ${d} de ${MONTHS[currentMonth]}</div>
+    Ventas acum.: <b>${fmt(c.acV[d])}</b><br>Egresos acum.: <b>${fmt(c.acE[d])}</b><br>
+    ${dif >= 0 ? "Utilidad" : "Pérdida"}: <b>${fmt(dif)}</b>
+    <div style="opacity:.75;margin-top:4px;font-size:11px">Ese día: vendió ${fmt(c.ventasDia[d])} · gastó ${fmt(c.egresosDia[d])}</div>`;
+  tip.style.display = "block";
+  const tw = tip.offsetWidth;
+  tip.style.left = Math.min(Math.max(cx - tw / 2, 0), c.W - tw) + "px";
+  tip.style.top = Math.max(Math.min(c.y(c.acV[d]), c.y(c.acE[d])) - tip.offsetHeight - 12, 0) + "px";
+}
+function dashHoverOut() {
+  ["dash-cross", "dash-dot-v", "dash-dot-e", "dash-tip"].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
+}
+
+let dashResizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(dashResizeTimer);
+  dashResizeTimer = setTimeout(() => { if (currentTab === "dashboard") drawDashChart(); }, 150);
+});
 
 // ============ RESUMEN ============
 function renderResumen() {
@@ -613,6 +1311,9 @@ function renderResumen() {
   
   let totE = 0, totB = 0;
   for (let d = 1; d <= days; d++) { totE += (v[d]?.efectivo||0); totB += (v[d]?.bancolombia||0); }
+  const adicionales = data.adicionales?.[key] || [];
+  totE += adicionales.reduce((s,x) => s+(x.efectivo||0), 0);
+  totB += adicionales.reduce((s,x) => s+(x.bancolombia||0), 0);
   const totVentas = totE + totB;
   const totGastos = g.reduce((s,x) => s+(x.valor||0), 0);
   const totMerc = m.reduce((s,x) => s+(x.costo||0), 0);
@@ -656,7 +1357,7 @@ function renderResumen() {
   // Últimas compras
   if (m.length > 0) {
     html += '<div style="margin-top:20px"><div class="sum-section-label">Últimas Compras de Mercancía</div>';
-    m.slice(-5).reverse().forEach(item => {
+    sortByFecha([...m]).slice(0, 5).forEach(item => {
       const prov = item.proveedor ? ` (${item.proveedor})` : "";
       html += `<div class="detail-row"><span class="dr-name"><strong>${fmtFecha(item.fecha)}</strong> — ${item.producto||"Sin nombre"}${prov}</span><span class="dr-val" style="color:#7a4f0e">${fmt(item.costo)}</span></div>`;
     });
