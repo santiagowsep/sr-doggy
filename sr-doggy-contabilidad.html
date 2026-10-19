@@ -1198,6 +1198,47 @@ function diaDelMes(fecha, days) {
   if (p.length === 3 && +p[0] === currentYear && +p[1] === currentMonth + 1) return Math.min(Math.max(parseInt(p[2]) || 1, 1), days);
   return 1;
 }
+// Familias para agrupar compras en el dashboard. El orden define como se nombra una
+// compra combinada ("Pan y papas" -> "Pan + Papas"). Los patrones van sobre texto
+// en minusculas y sin tildes.
+const FAMILIAS = [
+  ["Salchichas", /salchich/],
+  ["Pan", /\bpan\b|\bperros?\b/],
+  ["Papas", /\bpapas?\b|ripio/],
+  ["Queso", /queso/],
+  ["Tocineta", /tocineta/],
+  ["Huevos", /huevo/],
+  ["Piña", /\bpina\b/],
+  ["Salsas", /salsa|mayones|matones|chipot|bbq|rosada|showy|vermelo|bary|mostaza|guacamole|dooypa|\bwao\b|soya|cheddar|\baji\b/],
+  ["Pepinillos y jalapeños", /pepinill|jalapen|nachote/],
+  ["Verduras", /tomate|cebolla|pimenton|repollo|cilantro|zanahoria|limon|\bajo\b/],
+  ["Gaseosas", /gase?s?osa|coca|bretana/],
+  ["Aceite", /aceite/],
+  ["Azúcar y panela", /azucar|panela/],
+  ["Empaques", /caja|carton|bolsa|servillet|palil|aluminio|vaso|copas|tapas|polietileno|\bporta\b/],
+  ["Aseo", /jabon|esponja|escoba|trapero|recogedor|lavaplatos|toalla|papel|guantes|\baseo\b/],
+  ["Parqueadero", /parque/],
+  ["Arriendo", /arriendo/],
+];
+// quita cantidades: "x8", "x 4", "3 und", "7oz", "1 kg"
+const RE_CANTIDAD = /\bx\s*\d+\b|\b\d+\s*x\b|\b\d+\s*(und|unidades|kg|gr?|oz|lb|lt?)?\b/gi;
+function sinTildes(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+// en gastos y fijos solo se unifican parqueadero y arriendo; el resto de familias es de mercancia
+function familiaDe(nombre, cat) {
+  let t = sinTildes(String(nombre || "").toLowerCase()).replace(/[^a-z0-9ñ ]/g, " ");
+  // casos donde una palabra de salsa o de pan no lo es
+  t = t.replace(/queso cheddar/g, "queso").replace(/aceite (de )?soya/g, "aceite")
+       .replace(/salsa de tomate|tomate bary/g, "salsa").replace(/(cajas?|carton|bolsas?) (para )?perros?/g, "caja");
+  const fams = FAMILIAS.filter(([label, re]) => (cat === "mercancia" || label === "Parqueadero" || label === "Arriendo") && re.test(t)).map(([label]) => label);
+  if (fams.length === 1) return { key: fams[0], label: fams[0] };
+  if (fams.length === 2 || fams.length === 3) { const l = fams.join(" + "); return { key: l, label: l }; }
+  if (fams.length > 3) return { key: "_mixtas", label: "Compras mixtas" };
+  // sin familia: nombre limpio; singular/plural y mayusculas cuentan igual
+  const limpio = String(nombre || "").replace(RE_CANTIDAD, " ").replace(/\s+/g, " ").replace(/^[\s,.\-]+|[\s,.\-]+$/g, "");
+  if (!limpio) return { key: "_sin", label: "Sin nombre" };
+  const key = sinTildes(limpio.toLowerCase()).split(" ").map(w => w.replace(/(es|s)$/, "")).join(" ");
+  return { key, label: limpio.charAt(0).toUpperCase() + limpio.slice(1) };
+}
 function irATab(tab) {
   const btn = document.querySelector(`.tab-btn[onclick*="'${tab}'"]`);
   if (btn) { switchTab(tab, btn); window.scrollTo({ top: 0, behavior: "smooth" }); }
@@ -1361,10 +1402,17 @@ function renderDashboard() {
   html += '<div class="dash-cats">';
   cats.forEach(c => {
     const cfg = DASH_CAT[c.k], total = tot[c.k];
-    // agrupa por nombre para que compras repetidas sumen
+    // agrupa por familia ("Salchichas x8" y "salchicha" suman juntas)
     const grupos = {};
-    c.items.forEach(it => { const n = it.n.trim() || "Sin nombre"; grupos[n] = (grupos[n] || 0) + it.v; });
-    const top = Object.entries(grupos).filter(([, val]) => val > 0).sort((a, b) => b[1] - a[1]);
+    c.items.forEach(it => {
+      const fam = familiaDe(it.n, c.k);
+      const gr = grupos[fam.key] || (grupos[fam.key] = { label: fam.label, v: 0, n: 0, nombres: new Set() });
+      gr.v += it.v; gr.n++; gr.nombres.add(it.n.trim());
+    });
+    const top = Object.values(grupos).filter(gr => gr.v > 0).sort((a, b) => b.v - a.v).map(gr => {
+      const tip = gr.n > 1 ? `${gr.n} registros: ${[...gr.nombres].slice(0, 8).join(", ")}${gr.nombres.size > 8 ? "…" : ""}` : gr.label;
+      return [gr.n > 1 ? `${esc(gr.label)} <span style="color:#8a9670">×${gr.n}</span>` : esc(gr.label), gr.v, tip, gr.label];
+    });
     const maxItem = top.length ? top[0][1] : 0;
     let sub = `${pct(total, totEgresos)}% de los egresos · ${pct(total, totVentas)}% de las ventas`;
     if (c.k === "fijos") sub += `<br>Pagado ${fmt(total)} de ${fmt(presFijos)}`;
@@ -1377,8 +1425,8 @@ function renderDashboard() {
     if (top.length === 0) {
       html += '<div style="font-size:12px;color:#8a9670">Sin registros este mes</div>';
     } else {
-      top.slice(0, 5).forEach(([n, val]) => {
-        html += `<div class="dash-item"><div class="dash-item-row"><span class="n" title="${esc(n)}">${esc(n)}</span><span class="v">${fmt(val)}</span></div>
+      top.slice(0, 5).forEach(([n, val, tip]) => {
+        html += `<div class="dash-item"><div class="dash-item-row"><span class="n" title="${esc(tip)}">${n}</span><span class="v">${fmt(val)}</span></div>
           <div class="dash-track"><div style="width:${val / maxItem * 100}%;background:${cfg.color}"></div></div></div>`;
       });
       if (top.length > 5) {
