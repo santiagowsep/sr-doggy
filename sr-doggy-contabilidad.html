@@ -62,6 +62,9 @@
   .ventas-grid .gc.day-cell { flex-direction: column; font-size: 14px; font-weight: 700; color: #2d3a1e; padding: 6px 8px; }
   .ventas-grid .gc.day-cell .dn { font-size: 9px; color: #8a9670; text-transform: uppercase; }
   .ventas-grid .gc input { width: 100%; }
+  .turno-sel { appearance: none; -webkit-appearance: none; width: 100%; margin-top: 3px; padding: 1px 2px; border: none; border-radius: 6px; background: transparent; font-family: inherit; font-size: 9px; font-weight: 700; color: #8a9670; text-align: center; text-align-last: center; text-overflow: ellipsis; cursor: pointer; }
+  .turno-sel.otro { background: #5c1a6e; color: #f0d9f7; }
+  .turno-sel.nadie { color: #c0392b; }
   
   /* Row items */
   .row-item { display: flex; gap: 8px; align-items: center; padding: 10px 12px; background: #fefdf5; border-radius: 10px; border: 1px solid #e5ddb5; margin-bottom: 8px; flex-wrap: wrap; }
@@ -442,7 +445,16 @@ function renderVentas() {
     const bg = isToday ? "#fffbe6" : (dow === 0 || dow === 6) ? "#f0ead0" : "#fefdf5";
     const todayBorder = isToday ? "box-shadow:inset 3px 0 0 #c9a222;" : "";
 
-    html += `<div class="gc day-cell" style="background:${bg};${todayBorder}${isToday ? 'color:#8b6914;font-weight:900;' : ''}">${d}${isToday ? ' <span style="font-size:9px;color:#c9a222">●</span>' : ''}<span class="dn">${dayName}</span></div>`;
+    const turno = turnoDe(key, d), turnoGuardado = v[d].turno || "";
+    const turnoOtro = turnoGuardado && turnoGuardado !== "-" && !TURNO_PERSONAS.includes(turnoGuardado);
+    const turnoCls = turno === "" ? "nadie" : turno !== TURNO_PERSONAS[0] ? "otro" : "";
+    html += `<div class="gc day-cell" style="background:${bg};${todayBorder}${isToday ? 'color:#8b6914;font-weight:900;' : ''}">${d}${isToday ? ' <span style="font-size:9px;color:#c9a222">●</span>' : ''}<span class="dn">${dayName}</span>
+      <select class="turno-sel ${turnoCls}" title="Quién hizo el turno" onchange="cambiarTurno(${d}, this.value)">
+        ${TURNO_PERSONAS.map((p, j) => `<option value="${j === 0 ? "" : p}" ${turno === p && !turnoOtro ? "selected" : ""}>${p}</option>`).join("")}
+        ${turnoOtro ? `<option value="${esc(turnoGuardado)}" selected>${esc(turnoGuardado)}</option>` : ""}
+        <option value="otra">Otra persona…</option>
+        <option value="-" ${turno === "" ? "selected" : ""}>Nadie</option>
+      </select></div>`;
     html += `<div class="gc" style="background:${bg}"><input class="cop-input" value="${fmt(v[d].efectivo)}" onfocus="this.value='${v[d].efectivo||''}';this.select()" onblur="updateVenta(${d},'efectivo',this.value)"></div>`;
     html += `<div class="gc" style="background:${bg}"><input class="cop-input" value="${fmt(v[d].bancolombia)}" onfocus="this.value='${v[d].bancolombia||''}';this.select()" onblur="updateVenta(${d},'bancolombia',this.value)"></div>`;
     html += `<div class="gc notes-cell" style="background:${bg}"><input class="text-input" value="${v[d].notas||''}" placeholder="..." onchange="updateVenta(${d},'notas',this.value)" style="background:transparent"></div>`;
@@ -506,6 +518,23 @@ function updateVenta(day, field, val) {
   if (!data.ventas[key]) data.ventas[key] = {};
   if (!data.ventas[key][day]) data.ventas[key][day] = { efectivo: 0, bancolombia: 0, notas: "" };
   data.ventas[key][day][field] = field === "notas" ? val : (parseInt(val.replace(/[^0-9-]/g,"")) || 0);
+  saveData();
+  renderVentas();
+}
+// quien hizo el turno del dia: sin guardar = la primera de TURNO_PERSONAS, "-" = nadie
+function cambiarTurno(day, val) {
+  if (val === "otra") {
+    val = (prompt("¿Quién hizo el turno?") || "").trim();
+    if (!val) { renderVentas(); return; }
+    const fija = TURNO_PERSONAS.find(p => sinTildes(p.toLowerCase()) === sinTildes(val.toLowerCase()));
+    if (fija) val = fija === TURNO_PERSONAS[0] ? "" : fija;
+    else val = val.charAt(0).toUpperCase() + val.slice(1);
+  }
+  const key = getKey();
+  if (!data.ventas[key]) data.ventas[key] = {};
+  if (!data.ventas[key][day]) data.ventas[key][day] = { efectivo: 0, bancolombia: 0, notas: "" };
+  if (val) data.ventas[key][day].turno = val;
+  else delete data.ventas[key][day].turno;
   saveData();
   renderVentas();
 }
@@ -695,10 +724,27 @@ function normalizarFijo(item, pasado) {
   else Object.assign(item, { tipo: "mensual", presupuesto: item.value || 0, tarifa: 0, vence: "" });
   return item;
 }
-// dias que se pagan en una quincena: los del calendario salvo que se hayan cambiado a mano
+// quien hace los turnos; la primera es la de siempre (la que queda si no se escoge nada)
+const TURNO_PERSONAS = ["Liliana", "Sofía"];
+// nombre de quien hizo el turno ese dia, o "" si nadie trabajo
+function turnoDe(key, d) {
+  const t = data.ventas?.[key]?.[d]?.turno;
+  return t === "-" ? "" : t || TURNO_PERSONAS[0];
+}
+// turnos por persona en la quincena del mes visible: [[nombre, turnos], ...]
+function turnosQuincena(item, days) {
+  const key = getKey(), cuenta = {};
+  const desde = item.quincena === 2 ? 16 : 1, hasta = item.quincena === 2 ? days : 15;
+  for (let d = desde; d <= hasta; d++) {
+    const t = turnoDe(key, d);
+    if (t) cuenta[t] = (cuenta[t] || 0) + 1;
+  }
+  return Object.entries(cuenta).sort((a, b) => b[1] - a[1]);
+}
+// dias que se pagan en una quincena: los que alguien hizo turno, salvo que se hayan cambiado a mano
 function fijoDias(item, days) {
   if (item.dias !== "" && item.dias != null) return item.dias;
-  return item.quincena === 2 ? days - 15 : 15;
+  return turnosQuincena(item, days).reduce((s, [, n]) => s + n, 0);
 }
 function fijoVence(item, days) {
   if (item.tipo === "quincena") return item.quincena === 2 ? days : 15;
@@ -835,6 +881,12 @@ function renderFijos() {
         </select></div>
         <span ${lbl}>Días</span>
         <div style="width:52px;flex-shrink:0"><input class="cop-input" style="text-align:center" value="${fijoDias(item, days)}" onfocus="this.select()" onchange="updateFijo(${i},'dias',this.value)"></div>
+      </div>` : ""}
+      ${quincena ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+        ${turnosQuincena(item, days).map(([quien, n]) => `<div style="background:#f3eed6;border-radius:8px;padding:5px 9px;font-size:12px;color:#2d3a1e">
+          <b>${esc(quien)}</b> · ${n} turno${n === 1 ? "" : "s"} · <b style="font-family:'JetBrains Mono',monospace">${fmt((item.tarifa || 0) * n)}</b></div>`).join("")
+          || `<span ${lbl}>Nadie tiene turnos en esta quincena</span>`}
+        ${item.dias !== "" && item.dias != null ? `<span ${lbl}>Días cambiados a mano: bórralos para contar los turnos</span>` : ""}
       </div>` : ""}
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
         ${diario || quincena
