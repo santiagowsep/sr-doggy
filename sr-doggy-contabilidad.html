@@ -249,19 +249,23 @@
 const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const DAYS_ES = ["dom","lun","mar","mié","jue","vie","sáb"];
 const STORAGE_KEY = "sr_doggy_contabilidad";
-// Gastos fijos: `presupuesto` (o `tarifa` x dias del mes si tipo "diario") es lo que
-// cuesta en el mes; `value` es lo YA pagado, que es lo unico que se resta en caja.
-// `vence` es el dia del mes en que se paga (opcional).
+// Gastos fijos: `presupuesto` es lo que cuesta en el mes; `value` es lo YA pagado,
+// que es lo unico que se resta en caja. `vence` es el dia del mes en que se paga (opcional).
+// Tipos: "mensual"; "vencido" (lo que se recoge en el mes paga el del mes anterior);
+// "diario" (`tarifa` x dias del mes); "quincena" (`tarifa` x `dias` de la quincena 1 = dias
+// 1-15, que vence el 15, o 2 = del 16 al fin de mes, que vence el ultimo dia).
+// FIJO_DEFAULTS completa filas guardadas antes de que existieran los tipos; migrarFijos las pasa al esquema actual.
 const FIJO_DEFAULTS = {
   emp: { tipo: "diario", tarifa: 85000 },
   arriendo: { tipo: "mensual", presupuesto: 2848000, vence: 8 },
 };
 const DEFAULT_FIXED = [
-  { id: "emp", name: "Empleado", value: 0, fecha: "", metodo: "efectivo", tipo: "diario", tarifa: 85000, presupuesto: 0, vence: "" },
+  { id: "emp", name: "Empleado", value: 0, fecha: "", metodo: "efectivo", tipo: "quincena", quincena: 1, dias: "", tarifa: 85000, presupuesto: 0, vence: "" },
+  { id: "emp2", name: "Empleado", value: 0, fecha: "", metodo: "efectivo", tipo: "quincena", quincena: 2, dias: "", tarifa: 85000, presupuesto: 0, vence: "" },
   { id: "luz", name: "Luz", value: 0, fecha: "", metodo: "efectivo", tipo: "mensual", presupuesto: 0, vence: "" },
   { id: "agua", name: "Agua", value: 0, fecha: "", metodo: "efectivo", tipo: "mensual", presupuesto: 0, vence: "" },
   { id: "internet", name: "Internet", value: 0, fecha: "", metodo: "bancolombia", tipo: "mensual", presupuesto: 0, vence: "" },
-  { id: "arriendo", name: "Arriendo", value: 0, fecha: "", metodo: "efectivo", tipo: "mensual", presupuesto: 2848000, vence: 8 },
+  { id: "arriendo", name: "Arriendo", value: 0, fecha: "", metodo: "efectivo", tipo: "vencido", presupuesto: 2848000, vence: 8 },
 ];
 
 let currentMonth = new Date().getMonth();
@@ -691,26 +695,74 @@ function normalizarFijo(item, pasado) {
   else Object.assign(item, { tipo: "mensual", presupuesto: item.value || 0, tarifa: 0, vence: "" });
   return item;
 }
-function fijoPresupuesto(item, days) { return item.tipo === "diario" ? (item.tarifa || 0) * days : (item.presupuesto || 0); }
+// dias que se pagan en una quincena: los del calendario salvo que se hayan cambiado a mano
+function fijoDias(item, days) {
+  if (item.dias !== "" && item.dias != null) return item.dias;
+  return item.quincena === 2 ? days - 15 : 15;
+}
+function fijoVence(item, days) {
+  if (item.tipo === "quincena") return item.quincena === 2 ? days : 15;
+  return item.tipo === "diario" ? "" : parseInt(item.vence) || "";
+}
+function fijoPresupuesto(item, days) {
+  if (item.tipo === "diario") return (item.tarifa || 0) * days;
+  if (item.tipo === "quincena") return (item.tarifa || 0) * fijoDias(item, days);
+  return item.presupuesto || 0;
+}
 function fijoPorPagar(item, days) { return Math.max(fijoPresupuesto(item, days) - (item.value || 0), 0); }
-// fijos del mes visible; un mes nuevo hereda la lista del mes anterior (sin lo pagado)
-function fijosDelMes() {
-  const key = getKey();
+function mesAnterior(m) { return MONTHS[(m + 11) % 12].toLowerCase(); }
+// nombre con la quincena o el mes que se esta pagando, para listas fuera de la pestaña de fijos
+function fijoNombre(item) {
+  const n = item.name || "Sin nombre";
+  if (item.tipo === "quincena") return `${n} · ${item.quincena === 2 ? 2 : 1}ª quincena`;
+  if (item.tipo === "vencido") return `${n} de ${mesAnterior(currentMonth)}`;
+  return n;
+}
+// fijos de un mes; un mes nuevo hereda la lista del mes anterior (sin lo pagado)
+function fijosDe(y, m) {
+  const key = `${y}-${m}`;
   if (!data.fijos) data.fijos = {};
   if (!data.fijos[key]) {
-    const pm = currentMonth === 0 ? 11 : currentMonth - 1, py = currentMonth === 0 ? currentYear - 1 : currentYear;
+    const pm = m === 0 ? 11 : m - 1, py = m === 0 ? y - 1 : y;
     const prev = data.fijos[`${py}-${pm}`];
     data.fijos[key] = prev && prev.length
       ? prev.map(x => {
           normalizarFijo(x, esMesPasado(py, pm));
           return { id: x.id, name: x.name, tipo: x.tipo, tarifa: x.tarifa || 0, presupuesto: x.presupuesto || 0,
-                   vence: x.vence || "", metodo: x.metodo || "efectivo", value: 0, fecha: "" };
+                   quincena: x.quincena || "", dias: "", vence: x.vence || "", metodo: x.metodo || "efectivo", value: 0, fecha: "" };
         })
       : DEFAULT_FIXED.map(f => ({ ...f }));
   }
-  const pasado = esMesPasado(currentYear, currentMonth);
+  const pasado = esMesPasado(y, m);
   data.fijos[key].forEach(x => normalizarFijo(x, pasado));
   return data.fijos[key];
+}
+// Una sola vez: desde el mes actual en adelante el empleado "por dia" se parte en dos
+// quincenas (lo ya pagado llena primero la 1ª) y el arriendo pasa a mes vencido.
+// Los meses pasados no se tocan.
+function migrarFijos() {
+  if (data.migFijos) return;
+  const h = new Date();
+  fijosDe(h.getFullYear(), h.getMonth());
+  Object.keys(data.fijos).forEach(key => {
+    const [y, m] = key.split("-").map(Number);
+    if (esMesPasado(y, m)) return;
+    const lista = data.fijos[key];
+    const i = lista.findIndex(x => x.id === "emp" && x.tipo === "diario");
+    if (i >= 0) {
+      const e = lista[i], pagado = e.value || 0;
+      const q1 = { ...e, tipo: "quincena", quincena: 1, dias: "", value: Math.min(pagado, (e.tarifa || 0) * 15) };
+      const q2 = { ...e, id: "emp2", tipo: "quincena", quincena: 2, dias: "", value: pagado - q1.value };
+      if (!q2.value) q2.fecha = "";
+      lista.splice(i, 1, q1, q2);
+    }
+    lista.forEach(x => { if (x.id === "arriendo" && x.tipo === "mensual") x.tipo = "vencido"; });
+  });
+  data.migFijos = 1;
+}
+function fijosDelMes() {
+  migrarFijos();
+  return fijosDe(currentYear, currentMonth);
 }
 // texto del estado de un fijo: cuanto falta, cuando vence, cuanto se le debe al empleado
 function estadoFijo(item, days, dia) {
@@ -718,17 +770,21 @@ function estadoFijo(item, days, dia) {
   if (pres === 0) return { txt: "Escribe cuánto cuesta para tenerlo en cuenta", color: "#8a9670" };
   if (falta === 0) return { txt: "✓ Pagado completo", color: "#1f5e49" };
   let txt = `Falta ${fmt(falta)}`, color = "#2d3a1e";
+  const v = fijoVence(item, days);
+  const h = new Date(), esActual = currentYear === h.getFullYear() && currentMonth === h.getMonth();
   if (item.tipo === "diario") {
     const debe = Math.max((item.tarifa || 0) * dia - (item.value || 0), 0);
     if (dia > 0) txt += ` · a hoy le debes ${fmt(debe)} (${dia} días)`;
-  } else if (item.vence) {
-    const v = parseInt(item.vence);
-    const h = new Date(), esActual = currentYear === h.getFullYear() && currentMonth === h.getMonth();
+  } else if (v) {
     if (esMesPasado(currentYear, currentMonth)) { txt += " · quedó sin pagar"; color = "#8b1a1a"; }
     else if (!esActual) txt += ` · vence el día ${v}`;
     else if (v < dia) { txt += ` · venció el día ${v}`; color = "#8b1a1a"; }
     else if (v === dia) { txt += " · vence HOY"; color = "#8b1a1a"; }
     else { txt += ` · vence en ${v - dia} día${v - dia === 1 ? "" : "s"} (día ${v})`; if (v - dia <= 3) color = "#b8860b"; }
+  }
+  // mes vencido: cuanto hay que apartar cada dia, de hoy hasta que vence (o fin de mes)
+  if (item.tipo === "vencido" && esActual && (v || days) >= dia) {
+    txt += ` · aparta ≈${fmt(Math.ceil(falta / ((v || days) - dia + 1)))}/día`;
   }
   return { txt, color };
 }
@@ -736,8 +792,8 @@ function estadoFijo(item, days, dia) {
 function renderFijos() {
   const f = fijosDelMes();
   // pendientes con vencimiento primero; los que no tienen dia al final
-  f.sort((a, b) => (parseInt(a.vence) || 99) - (parseInt(b.vence) || 99));
   const days = daysInMonth(currentMonth, currentYear), dia = diaCorrido();
+  f.sort((a, b) => (fijoVence(a, days) || 99) - (fijoVence(b, days) || 99));
 
   let html = '<div class="section-header"><h3 class="section-title">Gastos Fijos Mensuales</h3>';
   html += '<button class="btn-primary" onclick="addFijo()">+ Agregar Gasto Fijo</button></div>';
@@ -760,21 +816,30 @@ function renderFijos() {
     const pres = fijoPresupuesto(item, days);
     const est = estadoFijo(item, days, dia);
     const falta = fijoPorPagar(item, days);
-    const diario = item.tipo === "diario";
+    const diario = item.tipo === "diario", quincena = item.tipo === "quincena";
     const montoPagar = diario ? Math.max((item.tarifa || 0) * dia - (item.value || 0), 0) : falta;
+    const tarifaInput = `<div style="flex:1;min-width:0"><input class="cop-input" value="${fmt(item.tarifa)}" onfocus="this.value='${item.tarifa || ''}';this.select()" onblur="updateFijo(${i},'tarifa',this.value)"></div>`;
+    const tipoOpt = (val, txt) => `<option value="${val}" ${(item.tipo || "mensual") === val ? "selected" : ""}>${txt}</option>`;
     html += `<div style="background:#fefdf5;border-radius:10px;border:1px solid #e5ddb5;padding:10px 12px;margin-bottom:8px">
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
         <input class="text-input" style="flex:1;min-width:0;font-weight:600" value="${esc(item.name)}" placeholder="Nombre" onchange="updateFijo(${i},'name',this.value)">
-        <div style="width:108px;flex-shrink:0"><select class="select-input" onchange="updateFijo(${i},'tipo',this.value)">
-          <option value="mensual" ${!diario ? "selected" : ""}>Mensual</option>
-          <option value="diario" ${diario ? "selected" : ""}>Por día</option>
+        <div style="width:124px;flex-shrink:0"><select class="select-input" onchange="updateFijo(${i},'tipo',this.value)">
+          ${tipoOpt("mensual", "Mensual")}${tipoOpt("vencido", "Mes vencido")}${tipoOpt("quincena", "Quincena")}${tipoOpt("diario", "Por día")}
         </select></div>
       </div>
+      ${item.tipo === "vencido" ? `<div style="font-size:11px;color:#8a9670;margin:-2px 0 8px">Lo que recoges en ${MONTHS[currentMonth].toLowerCase()} paga el de <b style="color:#2d3a1e">${mesAnterior(currentMonth)}</b></div>` : ""}
+      ${quincena ? `<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <div style="flex:1;min-width:0"><select class="select-input" onchange="updateFijo(${i},'quincena',this.value)">
+          <option value="1" ${item.quincena !== 2 ? "selected" : ""}>1ª quincena · día 1 al 15</option>
+          <option value="2" ${item.quincena === 2 ? "selected" : ""}>2ª quincena · día 16 al ${days}</option>
+        </select></div>
+        <span ${lbl}>Días</span>
+        <div style="width:52px;flex-shrink:0"><input class="cop-input" style="text-align:center" value="${fijoDias(item, days)}" onfocus="this.select()" onchange="updateFijo(${i},'dias',this.value)"></div>
+      </div>` : ""}
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-        ${diario
-          ? `<span ${lbl}>Por día</span>
-             <div style="flex:1;min-width:0"><input class="cop-input" value="${fmt(item.tarifa)}" onfocus="this.value='${item.tarifa || ''}';this.select()" onblur="updateFijo(${i},'tarifa',this.value)"></div>
-             <span ${lbl}>× ${days} días = <b style="color:#2d3a1e">${fmt(pres)}</b></span>`
+        ${diario || quincena
+          ? `<span ${lbl}>Por día</span>${tarifaInput}
+             <span ${lbl}>× ${diario ? days : fijoDias(item, days)} días = <b style="color:#2d3a1e">${fmt(pres)}</b></span>`
           : `<span ${lbl}>Cuesta</span>
              <div style="flex:1;min-width:0"><input class="cop-input" value="${fmt(item.presupuesto)}" onfocus="this.value='${item.presupuesto || ''}';this.select()" onblur="updateFijo(${i},'presupuesto',this.value)"></div>
              <span ${lbl}>Vence día</span>
@@ -795,7 +860,7 @@ function renderFijos() {
       <div class="dash-track" style="margin-top:10px"><div style="width:${pres ? Math.min((item.value || 0) / pres * 100, 100) : 0}%;background:${DASH_CAT.fijos.color}"></div></div>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
         <span style="font-size:12px;font-weight:600;color:${est.color}">${est.txt}</span>
-        ${montoPagar > 0 ? `<button class="dash-link" style="margin:0" onclick="pagarFijo(${i})">${diario ? `Registrar pago de ${fmt(montoPagar)}` : "Marcar pagado"}</button>` : ""}
+        ${montoPagar > 0 ? `<button class="dash-link" style="margin:0" onclick="pagarFijo(${i})">${diario ? `Registrar pago de ${fmt(montoPagar)}` : quincena ? `Pagar quincena (${fmt(montoPagar)})` : "Marcar pagado"}</button>` : ""}
       </div>
     </div>`;
   });
@@ -832,6 +897,9 @@ function updateFijo(i, field, val) {
   const key = getKey();
   if (["value", "presupuesto", "tarifa"].includes(field)) val = parseInt(val.replace(/[^0-9-]/g,"")) || 0;
   if (field === "vence") { const d = parseInt(val); val = d >= 1 && d <= 31 ? d : ""; }
+  if (field === "dias") { const d = parseInt(val); val = d >= 0 && d <= 31 ? d : ""; }
+  if (field === "quincena") { val = parseInt(val) === 2 ? 2 : 1; data.fijos[key][i].dias = ""; }
+  if (field === "tipo" && val === "quincena" && !data.fijos[key][i].quincena) data.fijos[key][i].quincena = 1;
   data.fijos[key][i][field] = val;
   saveData(); renderFijos();
 }
@@ -1298,7 +1366,7 @@ function renderDashboard() {
   // pendientes en orden de vencimiento para ver cuales ya estan cubiertos.
   const presFijos = f.reduce((s, x) => s + fijoPresupuesto(x, days), 0);
   if (presFijos > 0) {
-    const pend = f.map(x => ({ x, falta: fijoPorPagar(x, days), vence: parseInt(x.vence) || 99 }))
+    const pend = f.map(x => ({ x, falta: fijoPorPagar(x, days), vence: fijoVence(x, days) || 99 }))
       .filter(p => p.falta > 0).sort((a, b) => a.vence - b.vence);
     const porPagar = pend.reduce((s, p) => s + p.falta, 0);
     let disp = Math.max(utilidad, 0);
@@ -1355,7 +1423,7 @@ function renderDashboard() {
         const chip = p.cubierto >= p.falta
           ? `<span style="color:#1f5e49">✓ cubierto</span>`
           : p.cubierto > 0 ? `<span style="color:#7a4f0e">faltan ${fmt(p.falta - p.cubierto)}</span>` : `<span style="color:#8b1a1a">faltan ${fmt(p.falta)}</span>`;
-        html += `<div class="dash-item" style="margin-bottom:9px"><div class="dash-item-row"><span class="n" style="font-weight:700">${esc(p.x.name)}</span><span class="v">${chip}</span></div>
+        html += `<div class="dash-item" style="margin-bottom:9px"><div class="dash-item-row"><span class="n" style="font-weight:700">${esc(fijoNombre(p.x))}</span><span class="v">${chip}</span></div>
           <div style="font-size:11px;color:${est.color === '#2d3a1e' ? '#8a9670' : est.color}">${est.txt}</div></div>`;
       });
       html += `</div><button class="dash-link" onclick="irATab('fijos')">Ir a gastos fijos →</button>`;
@@ -1589,7 +1657,7 @@ function renderResumen() {
   html += '<div style="margin-top:20px"><div class="sum-section-label">Desglose Gastos Fijos</div>';
   f.forEach(item => {
     const pres = fijoPresupuesto(item, days);
-    html += `<div class="detail-row"><span class="dr-name">${item.name}</span><span class="dr-val" style="color:#5c1a6e">${fmt(item.value)}${pres > (item.value || 0) ? ` <span style="color:#8a9670;font-weight:500">de ${fmt(pres)}</span>` : ""}</span></div>`;
+    html += `<div class="detail-row"><span class="dr-name">${esc(fijoNombre(item))}</span><span class="dr-val" style="color:#5c1a6e">${fmt(item.value)}${pres > (item.value || 0) ? ` <span style="color:#8a9670;font-weight:500">de ${fmt(pres)}</span>` : ""}</span></div>`;
   });
   html += '</div>';
   
