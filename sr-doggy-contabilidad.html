@@ -65,6 +65,11 @@
   .turno-sel { appearance: none; -webkit-appearance: none; width: 100%; margin-top: 3px; padding: 1px 2px; border: none; border-radius: 6px; background: transparent; font-family: inherit; font-size: 9px; font-weight: 700; color: #8a9670; text-align: center; text-align-last: center; text-overflow: ellipsis; cursor: pointer; }
   .turno-sel.otro { background: #5c1a6e; color: #f0d9f7; }
   .turno-sel.nadie { color: #c0392b; }
+  .ventas-grid .gc.total-cell { flex-direction: column; gap: 3px; }
+  .sobre-btn { padding: 2px 6px; border: 1px dashed #b5a96a; border-radius: 6px; background: transparent; font-family: inherit; font-size: 9px; font-weight: 700; color: #8a9670; text-transform: uppercase; letter-spacing: .5px; cursor: pointer; white-space: nowrap; }
+  .sobre-btn:hover { border-color: #4a7c2e; color: #4a7c2e; }
+  .ventas-grid .gc.sobre-ok .sobre-btn { border: 1px solid #f5e6a3; background: #f5e6a3; color: #2d5016; }
+  .ventas-grid .gc.sobre-ok input { background: #f1f9ea; border-color: #9cc983; }
   
   /* Row items */
   .row-item { display: flex; gap: 8px; align-items: center; padding: 10px 12px; background: #fefdf5; border-radius: 10px; border: 1px solid #e5ddb5; margin-bottom: 8px; flex-wrap: wrap; }
@@ -442,24 +447,29 @@ function renderVentas() {
     const dow = new Date(currentYear, currentMonth, d).getDay();
     const dayName = DAYS_ES[dow];
     const isToday = isCurrentMonth && d === todayDay;
-    const bg = isToday ? "#fffbe6" : (dow === 0 || dow === 6) ? "#f0ead0" : "#fefdf5";
+    // sobre = ya conté el dinero del sobre de ese día: la fila queda verde
+    const sobre = !!v[d].sobre, sc = sobre ? " sobre-ok" : "";
+    const bg = sobre ? "#d4ecc2" : isToday ? "#fffbe6" : (dow === 0 || dow === 6) ? "#f0ead0" : "#fefdf5";
     const todayBorder = isToday ? "box-shadow:inset 3px 0 0 #c9a222;" : "";
 
     const turno = turnoDe(key, d), turnoGuardado = v[d].turno || "";
     const turnoOtro = turnoGuardado && turnoGuardado !== "-" && !TURNO_PERSONAS.includes(turnoGuardado);
     const turnoCls = turno === "" ? "nadie" : turno !== TURNO_PERSONAS[0] ? "otro" : "";
-    html += `<div class="gc day-cell" style="background:${bg};${todayBorder}${isToday ? 'color:#8b6914;font-weight:900;' : ''}">${d}${isToday ? ' <span style="font-size:9px;color:#c9a222">●</span>' : ''}<span class="dn">${dayName}</span>
+    html += `<div class="gc day-cell${sc}" style="background:${bg};${todayBorder}${isToday ? 'color:#8b6914;font-weight:900;' : ''}">${d}${isToday ? ' <span style="font-size:9px;color:#c9a222">●</span>' : ''}<span class="dn">${dayName}</span>
       <select class="turno-sel ${turnoCls}" title="Quién hizo el turno" onchange="cambiarTurno(${d}, this.value)">
         ${TURNO_PERSONAS.map((p, j) => `<option value="${j === 0 ? "" : p}" ${turno === p && !turnoOtro ? "selected" : ""}>${p}</option>`).join("")}
         ${turnoOtro ? `<option value="${esc(turnoGuardado)}" selected>${esc(turnoGuardado)}</option>` : ""}
         <option value="otra">Otra persona…</option>
         <option value="-" ${turno === "" ? "selected" : ""}>Nadie</option>
       </select></div>`;
-    html += `<div class="gc" style="background:${bg}"><input class="cop-input" value="${fmt(v[d].efectivo)}" onfocus="this.value='${v[d].efectivo||''}';this.select()" onblur="updateVenta(${d},'efectivo',this.value)"></div>`;
-    html += `<div class="gc" style="background:${bg}"><input class="cop-input" value="${fmt(v[d].bancolombia)}" onfocus="this.value='${v[d].bancolombia||''}';this.select()" onblur="updateVenta(${d},'bancolombia',this.value)"></div>`;
-    html += `<div class="gc notes-cell" style="background:${bg}"><input class="text-input" value="${v[d].notas||''}" placeholder="..." onchange="updateVenta(${d},'notas',this.value)" style="background:transparent"></div>`;
+    html += `<div class="gc${sc}" style="background:${bg}"><input class="cop-input" value="${fmt(v[d].efectivo)}" onfocus="this.value='${v[d].efectivo||''}';this.select()" onblur="updateVenta(${d},'efectivo',this.value)"></div>`;
+    html += `<div class="gc${sc}" style="background:${bg}"><input class="cop-input" value="${fmt(v[d].bancolombia)}" onfocus="this.value='${v[d].bancolombia||''}';this.select()" onblur="updateVenta(${d},'bancolombia',this.value)"></div>`;
+    html += `<div class="gc notes-cell${sc}" style="background:${bg}"><input class="text-input" value="${v[d].notas||''}" placeholder="..." onchange="updateVenta(${d},'notas',this.value)" style="background:transparent"></div>`;
     const dayTotal = (v[d].efectivo || 0) + (v[d].bancolombia || 0);
-    html += `<div class="gc" style="background:${dayTotal > 0 ? '#e8f2dc' : bg};font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:${dayTotal > 0 ? '#2d5016' : '#bbb'};justify-content:center">${dayTotal > 0 ? fmt(dayTotal) : '—'}</div>`;
+    const totBg = sobre ? "#3a7d1e" : dayTotal > 0 ? "#e8f2dc" : bg;
+    const totColor = sobre ? "#fff" : dayTotal > 0 ? "#2d5016" : "#bbb";
+    html += `<div class="gc total-cell${sc}" style="background:${totBg};font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:${totColor};justify-content:center">${dayTotal > 0 ? fmt(dayTotal) : '—'}
+      ${dayTotal > 0 || sobre ? `<button class="sobre-btn" title="${sobre ? "Sobre revisado (clic para desmarcar)" : "Marcar el sobre como revisado"}" onclick="toggleSobre(${d})">${sobre ? "✓ Sobre" : "Sobre"}</button>` : ""}</div>`;
   }
   html += '</div>';
   
@@ -518,6 +528,15 @@ function updateVenta(day, field, val) {
   if (!data.ventas[key]) data.ventas[key] = {};
   if (!data.ventas[key][day]) data.ventas[key][day] = { efectivo: 0, bancolombia: 0, notas: "" };
   data.ventas[key][day][field] = field === "notas" ? val : (parseInt(val.replace(/[^0-9-]/g,"")) || 0);
+  saveData();
+  renderVentas();
+}
+function toggleSobre(day) {
+  const key = getKey();
+  if (!data.ventas[key]) data.ventas[key] = {};
+  if (!data.ventas[key][day]) data.ventas[key][day] = { efectivo: 0, bancolombia: 0, notas: "" };
+  if (data.ventas[key][day].sobre) delete data.ventas[key][day].sobre;
+  else data.ventas[key][day].sobre = true;
   saveData();
   renderVentas();
 }
